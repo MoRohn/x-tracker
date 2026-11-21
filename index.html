@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>X Post Tracker · @RohnSpringfield</title>
+<meta name="description" content="Public X stats dashboard for @RohnSpringfield">
+<meta name="theme-color" content="#0b1220">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="X Tracker">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#0b1220;--card:#121a2b;--line:#22304a;--tx:#e6edf7;--tx2:#9fb0c8;--tx3:#6b7d99;--c0:#1d9bf0;--c1:#f5b400;--c2:#22c3c3;--oth:#5b6b85}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;-webkit-text-size-adjust:100%}
+body{padding:calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 12px) calc(env(safe-area-inset-bottom) + 24px) calc(env(safe-area-inset-left) + 12px)}
+.wrap{max-width:1280px;margin:0 auto}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px;margin-bottom:12px}
+h1{font-size:19px;margin:0;font-weight:650}.sub{color:var(--tx3);font-size:12px;margin-top:2px}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:2px;flex-wrap:wrap}
+.seg button{all:unset;cursor:pointer;padding:5px 11px;border-radius:8px;color:var(--tx2);font-size:12px;font-weight:600}
+.seg button.on{background:var(--line);color:var(--tx)}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+@media(min-width:700px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}
+.k .l{color:var(--tx2);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.k .v{font-size:22px;font-weight:700;margin-top:3px;display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.k .s{color:var(--tx3);font-size:11px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.d{color:var(--tx2);font-size:11px;margin-top:3px}
+.badge{display:inline-block;background:var(--line);color:var(--tx2);border-radius:99px;padding:2px 8px;font-size:10.5px;font-weight:600}
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1050px){.grid{grid-template-columns:repeat(3,1fr)}}
+.card h2{font-size:13px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;font-weight:650}
+.cv{position:relative;height:210px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}
+th{color:var(--tx3);font-weight:600;font-size:11px}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+td a{color:var(--tx);text-decoration:none}td a:hover{text-decoration:underline}
+.heat{display:grid;grid-template-columns:34px repeat(8,1fr);gap:3px;font-size:10px;color:var(--tx3)}
+.heat div.c{aspect-ratio:1.3;border-radius:4px;background:#17223a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px}
+.split{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--line);margin-top:10px}
+.leg{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;font-size:11px;color:var(--tx2)}.leg i{display:inline-block;width:8px;height:8px;border-radius:4px;margin-right:5px}
+ol{margin:0;padding-left:18px}ol li{margin:0 0 6px}
+details{margin-top:10px}summary{cursor:pointer;color:var(--tx2);font-size:12.5px;font-weight:600}
+dl{display:grid;grid-template-columns:minmax(110px,30%) 1fr;gap:6px 10px;font-size:12px;margin:10px 0 0}dt{color:var(--tx3)}dd{margin:0;color:var(--tx2)}
+.funnel{display:flex;gap:6px;flex-wrap:wrap}.funnel div{flex:1;min-width:80px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+.funnel b{display:block;font-size:20px}.funnel span{font-size:11px;color:var(--tx3)}
+footer{color:var(--tx3);font-size:11px;margin-top:14px;text-align:center}footer a{color:var(--tx2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>X Post Tracker · @RohnSpringfield</h1><div class="sub" id="sub">Loading…</div></div>
+    <div class="seg" id="win"><button data-v="7d">7d</button><button data-v="30d">30d</button><button data-v="all" class="on">All</button></div>
+  </header>
+  <section class="kpis" id="kpis"></section>
+  <section class="grid">
+    <div class="card"><h2><span id="vtitle">Views per day</span><span class="seg" id="per"><button data-v="day" class="on">Day</button><button data-v="month">Month</button></span></h2><div class="cv"><canvas id="cViews"></canvas></div></div>
+    <div class="card"><h2>Top 10 posts</h2><div class="cv" style="height:260px"><canvas id="cTop"></canvas></div></div>
+    <div class="card"><h2>Follower growth <span id="fbadge"></span></h2><div class="cv"><canvas id="cFol"></canvas></div></div>
+    <div class="card"><h2>Views by day and time (ET) <span id="hbadge"></span></h2><div class="heat" id="heat"></div></div>
+    <div class="card"><h2>Originals vs replies vs quotes</h2><table id="tTypes"></table><div class="split" id="split"></div><div class="leg" id="splitleg"></div></div>
+    <div class="card"><h2>Pillar mix vs target <span class="badge">% of posts</span></h2><div class="cv"><canvas id="cPil"></canvas></div></div>
+    <div class="card"><h2>Reply reach <span class="badge">% of parent views</span></h2><div class="cv"><canvas id="cReach"></canvas></div></div>
+    <div class="card"><h2><span id="rtitle">Top 5 posts</span><span class="seg" id="rank"><button data-v="top" class="on">Top</button><button data-v="bottom">Bottom</button></span></h2>
+      <div class="seg" id="typ" style="margin-bottom:8px"><button data-v="All" class="on">All</button><button data-v="Original">Original</button><button data-v="Reply">Reply</button><button data-v="Quote">Quote</button></div>
+      <table id="tRank"></table></div>
+    <div class="card"><h2>Top reply targets</h2><table id="tTargets"></table></div>
+    <div class="card"><h2>Posting pipeline <span class="badge">counts only</span></h2><div class="funnel" id="funnel"></div></div>
+    <div class="card" style="grid-column:1/-1"><h2>Next moves</h2><ol id="moves"></ol></div>
+  </section>
+  <details class="card"><summary>Data limits &amp; method</summary><dl id="limits"></dl><p class="sub" id="hooks"></p></details>
+  <footer>Public X metrics only · <a href="https://x.com/RohnSpringfield">@RohnSpringfield</a></footer>
+</div>
+<script>
+const C0="#1d9bf0",C1="#f5b400",C2="#22c3c3",OTH="#5b6b85",GRID="#22304a",TX2="#9fb0c8";
+const fmt=n=>n==null?"—":Number(n).toLocaleString("en-US",{maximumFractionDigits:1});
+const sgn=(d,u="")=>d==null?null:(d>0?"+":d<0?"−":"±")+fmt(Math.abs(d))+u;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const SHORT={"AI building in practice":"AI building","Data/systems lessons":"Data/systems","Expert know-how → agents (acumane)":"Know-how→agents","Founder life / BLERBZ":"Founder/BLERBZ"};
+let D,st={win:"all",per:"day",rank:"top",typ:"All"},charts={};
+Chart.defaults.color=TX2;Chart.defaults.borderColor=GRID;Chart.defaults.font.size=11;Chart.defaults.plugins.legend.labels.boxWidth=10;
+function seg(id,key){document.querySelectorAll(`#${id} button`).forEach(b=>b.onclick=()=>{st[key]=b.dataset.v;document.querySelectorAll(`#${id} button`).forEach(x=>x.classList.toggle("on",x===b));render();});}
+function chart(id,cfg){if(charts[id])charts[id].destroy();cfg.options=Object.assign({responsive:true,maintainAspectRatio:false,animation:false},cfg.options||{});charts[id]=new Chart(document.getElementById(id),cfg);}
+function W(){const r=D.windows[st.win];return typeof r==="string"?D.windows[r]:r;}
+function ring(v,g){const r=11,c=2*Math.PI*r,f=Math.min(1,v/g);return `<svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="${r}" fill="none" stroke="${GRID}" stroke-width="4"/><circle cx="14" cy="14" r="${r}" fill="none" stroke="${C0}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${Math.max(c*f,1.2)} ${c}" transform="rotate(-90 14 14)"/></svg>`;}
+function tile(l,v,{s,d,b}={}){return `<div class="card k"><div class="l">${l}</div><div class="v">${v}</div>${d?`<div class="d">${d}</div>`:""}${b?`<div class="d"><span class="badge">${b}</span></div>`:""}${s?`<div class="s">${esc(s)}</div>`:""}</div>`;}
+function render(){
+  const w=W(),K=D.kpi,isAll=st.win==="all"||typeof D.windows[st.win]==="string",ds=D.delta_since?` since ${D.delta_since}`:"";
+  const dd=(x,u)=>isAll&&sgn(x,u)?sgn(x,u)+ds:null,T=Object.fromEntries(w.types.map(t=>[t.name,t])),top=w.top[0];
+  document.getElementById("sub").textContent=`All ${K.posts.value} posts since ${D.since_et} · read ${D.generated_et} · ${D.snapshots} snapshots · times ET`;
+  document.getElementById("kpis").innerHTML=[
+    tile("Total views",fmt(w.stats.views),{d:dd(K.views.delta)}),
+    tile("Posts",fmt(w.stats.n),{d:dd(K.posts.delta),s:`${T.Original.n} orig · ${T.Reply.n} replies · ${T.Quote.n} quotes`}),
+    tile("Followers",`${ring(K.followers.value,K.followers.goal)}${fmt(K.followers.value)} / ${fmt(K.followers.goal)}`,{d:sgn(K.followers.delta)?sgn(K.followers.delta)+ds:null,s:`following ${K.followers.following}`}),
+    tile("Median views / post",fmt(w.median_all),{d:dd(K.median.delta)}),
+    tile("Engagement rate",w.stats.eng_rate==null?"—":fmt(w.stats.eng_rate)+"%",{d:dd(K.eng_rate.delta," pts"),s:`${w.stats.eng} engagements`}),
+    tile("Top post",top?`${fmt(top.views)} views`:"—",{s:top?top.label:""}),
+    tile("Best format",w.best_format?`${w.best_format.name} ${w.best_format.mult}×`:"—",{b:w.best_format?`early read, n=${w.best_format.n}`:`need ${D.min_n}+ per format`}),
+    tile("Best hour",w.best_hour?`${w.best_hour.name} ${w.best_hour.mult}×`:"—",{b:w.best_hour?`n=${w.best_hour.n}`:`need 7 days · ${w.days_active} so far`}),
+  ].join("");
+  const per=st.per==="day"?w.by_day.map(x=>[x.label,x.views]):w.by_month.map(x=>[x.label,x.views]);
+  document.getElementById("vtitle").textContent=st.per==="day"?"Views per day":"Views per month";
+  chart("cViews",{type:"bar",data:{labels:per.map(x=>x[0]),datasets:[{data:per.map(x=>x[1]),backgroundColor:C0,borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+  chart("cTop",{type:"bar",data:{labels:w.top.map(p=>p.label.length>28?p.label.slice(0,27)+"…":p.label),datasets:[{data:w.top.map(p=>p.views),backgroundColor:w.top.map((p,i)=>i?OTH:C0),borderRadius:4}]},options:{indexAxis:"y",plugins:{legend:{display:false}},scales:{x:{beginAtZero:true},y:{grid:{display:false}}}}});
+  const fs=D.followers_series;document.getElementById("fbadge").innerHTML=fs.length<2?'<span class="badge">need 2 snapshots</span>':"";
+  chart("cFol",{type:"line",data:{labels:fs.map(s=>s.label),datasets:[{data:fs.map(s=>s.followers),borderColor:C0,backgroundColor:C0+"33",fill:true,tension:.25,pointRadius:3}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,suggestedMax:10}}}});
+  const mx=Math.max(1,...w.heat.flat()),days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  let h='<div></div>'+D.heat_cols.map(c=>`<div style="text-align:center">${c}</div>`).join("");
+  w.heat.forEach((row,i)=>{h+=`<div style="align-self:center">${days[i]}</div>`+row.map(v=>`<div class="c" style="${v?`background:rgba(29,155,240,${.25+.75*v/mx})`:""}" title="${v} views">${v||""}</div>`).join("");});
+  document.getElementById("heat").innerHTML=h;document.getElementById("hbadge").innerHTML=w.days_active<7?`<span class="badge">${w.days_active} day of data</span>`:"";
+  document.getElementById("tTypes").innerHTML="<tr><th>Type</th><th class=n>Posts</th><th class=n>Median</th><th class=n>Views</th><th class=n>Eng %</th></tr>"+w.types.map(t=>`<tr><td>${t.name}</td><td class=n>${t.n}</td><td class=n>${fmt(t.median)}</td><td class=n>${fmt(t.views)}</td><td class=n>${t.eng_rate==null?"—":fmt(t.eng_rate)+"%"}</td></tr>`).join("");
+  const tot=w.types.reduce((a,t)=>a+t.views,0)||1,cols=[C0,C1,C2];
+  document.getElementById("split").innerHTML=w.types.map((t,i)=>t.views?`<div style="width:${100*t.views/tot}%;background:${cols[i]}"></div>`:"").join("");
+  document.getElementById("splitleg").innerHTML=w.types.map((t,i)=>`<span><i style="background:${cols[i]}"></i>${t.name} ${fmt(t.views)}</span>`).join("");
+  chart("cPil",{type:"bar",data:{labels:w.pillars.map(p=>SHORT[p.name]||p.name),datasets:[{label:"Actual",data:w.pillars.map(p=>p.share),backgroundColor:C0,borderRadius:4},{label:"Target",data:w.pillars.map(p=>p.target),backgroundColor:C1,borderRadius:4}]},options:{scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+"%"}}}}});
+  const rt=w.targets.filter(t=>t.capture!=null).sort((a,b)=>b.capture-a.capture);
+  chart("cReach",{type:"bar",data:{labels:rt.map(t=>t.target),datasets:[{data:rt.map(t=>t.capture),backgroundColor:rt.map((t,i)=>i?OTH:C0),borderRadius:4}]},options:{indexAxis:"y",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw}% · ${rt[c.dataIndex].parent_replies} replies on parent`}}},scales:{x:{beginAtZero:true,ticks:{callback:v=>v+"%"}},y:{grid:{display:false}}}}});
+  document.getElementById("rtitle").textContent=st.rank==="top"?"Top 5 posts":"Bottom 5 posts";
+  const rk=(st.rank==="top"?w.top:w.bottom).filter(p=>st.typ==="All"||p.type===st.typ).slice(0,5);
+  document.getElementById("tRank").innerHTML="<tr><th>Post</th><th>Type</th><th class=n>Views</th></tr>"+(rk.length?rk.map(p=>`<tr><td><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.label)}</a></td><td>${p.type}</td><td class=n>${fmt(p.views)}</td></tr>`).join(""):`<tr><td colspan=3><span class="badge">no ${st.typ.toLowerCase()} posts yet</span></td></tr>`);
+  document.getElementById("tTargets").innerHTML="<tr><th>Account</th><th class=n>Replies</th><th class=n>Views</th><th class=n>Reach</th></tr>"+w.targets.slice(0,5).map(t=>`<tr><td><a href="https://x.com/${esc(t.target.slice(1))}" target="_blank" rel="noopener">${esc(t.target)}</a></td><td class=n>${t.replies}</td><td class=n>${fmt(t.views)}</td><td class=n>${t.capture==null?"—":t.capture+"%"}</td></tr>`).join("");
+  const F=D.funnel;document.getElementById("funnel").innerHTML=[["Drafted",F.drafted],["Approved",F.approved],["Posted",F.posted]].map(x=>`<div><b>${x[1]}</b><span>${x[0]}</span></div>`).join("");
+  document.getElementById("moves").innerHTML=D.moves.map(m=>`<li>${esc(m)}</li>`).join("");
+  document.getElementById("limits").innerHTML=D.limits.map(l=>`<dt>${esc(l.label)}</dt><dd>${esc(l.value)}</dd>`).join("");
+  document.getElementById("hooks").textContent="Hook levers: "+w.hooks.map(h=>`${h.name} ${fmt(h.median)} median (n=${h.n})`).join("; ");
+}
+["win","per","rank","typ"].forEach(k=>seg(k,k));
+fetch("data.json",{cache:"no-store"}).then(r=>r.json()).then(d=>{D=d;render();}).catch(e=>{document.getElementById("sub").textContent="Could not load data.json";});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");
+</script>
+</body>
+</html>
