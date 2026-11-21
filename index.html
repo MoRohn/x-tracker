@@ -93,7 +93,7 @@ function tile(l,v,{s,d,b}={}){return `<div class="card k"><div class="l">${l}</d
 function render(){
   const w=W(),K=D.kpi,isAll=st.win==="all"||typeof D.windows[st.win]==="string",ds=D.delta_since?` since ${D.delta_since}`:"";
   const dd=(x,u)=>isAll&&sgn(x,u)?sgn(x,u)+ds:null,T=Object.fromEntries(w.types.map(t=>[t.name,t])),top=w.top[0];
-  document.getElementById("sub").textContent=`All ${K.posts.value} posts since ${D.since_et} · read ${D.generated_et} · ${D.snapshots} snapshots · times ET`;
+  document.getElementById("sub").textContent=`All ${K.posts.value} posts since ${D.since_et} · read ${D.generated_et} · published ${D.published_et||"—"} · ${D.snapshots} snapshots · times ET`;
   document.getElementById("kpis").innerHTML=[
     tile("Total views",fmt(w.stats.views),{d:dd(K.views.delta)}),
     tile("Posts",fmt(w.stats.n),{d:dd(K.posts.delta),s:`${T.Original.n} orig · ${T.Reply.n} replies · ${T.Quote.n} quotes`}),
