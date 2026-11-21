@@ -133,7 +133,7 @@ function render(){
 }
 ["win","per","rank","typ"].forEach(k=>seg(k,k));
 fetch("data.json",{cache:"no-store"}).then(r=>r.json()).then(d=>{D=d;render();}).catch(e=>{document.getElementById("sub").textContent="Could not load data.json";});
-if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});
 </script>
 </body>
 </html>

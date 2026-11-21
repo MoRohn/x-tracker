@@ -1,10 +1,27 @@
-// Network-first for data, cache fallback so the home-screen app opens offline.
-const C = "xt-v2";
-const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png"];
-self.addEventListener("install", e => { e.waitUntil(caches.open(C).then(c => c.addAll(SHELL))); self.skipWaiting(); });
-self.addEventListener("activate", e => e.waitUntil(self.clients.claim()));
+// X Tracker service worker. Network-first for everything (HTML, JS, JSON) so updates arrive immediately;
+// the cache is only an offline fallback. Old caches are deleted and a new SW takes over at once.
+const C = "xt-v3";
+const SHELL = ["./", "index.html", "approve/", "approve/index.html", "manifest.webmanifest", "icons/icon-192.png"];
+self.addEventListener("install", e => {
+  self.skipWaiting();
+  e.waitUntil(caches.open(C).then(c => Promise.all(SHELL.map(u => c.add(new Request(u, { cache: "reload" })).catch(() => {})))));
+});
+self.addEventListener("activate", e => e.waitUntil((async () => {
+  for (const k of await caches.keys()) if (k !== C) await caches.delete(k);
+  await self.clients.claim();
+})()));
 self.addEventListener("fetch", e => {
-  if (e.request.method !== "GET") return;
-  e.respondWith(fetch(e.request).then(r => { const cp = r.clone(); caches.open(C).then(c => c.put(e.request, cp)); return r; })
-    .catch(() => caches.match(e.request)));
+  const req = e.request;
+  if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;  // never touch GitHub/X/CDN requests
+  e.respondWith((async () => {
+    try {
+      const r = req.mode === "navigate"
+        ? await fetch(req.url, { cache: "no-store", credentials: "same-origin" })
+        : await fetch(req, { cache: "no-store" });
+      if (r.ok) { const cp = r.clone(); caches.open(C).then(c => c.put(req, cp)); }
+      return r;
+    } catch (err) {
+      return (await caches.match(req, { ignoreSearch: true })) || Response.error();
+    }
+  })());
 });
