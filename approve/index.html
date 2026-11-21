@@ -36,6 +36,10 @@ h2{font-size:13px;margin:16px 2px 8px;color:var(--tx2);font-weight:650;text-tran
 .meta a{color:var(--tx);text-decoration:none;border-bottom:1px dotted var(--tx3)}
 .text{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14.5px;margin:6px 0}
 .count{font-size:11px;color:var(--tx3);text-align:right}.count.over{color:var(--warn)}
+.dm{display:grid;gap:2px;margin:8px 0 2px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#000}.dm.n2,.dm.n3,.dm.n4{grid-template-columns:1fr 1fr}
+.dm img,.dm video{display:block;width:100%;height:auto;max-height:520px;object-fit:cover;background:#000}.dm.n2 img,.dm.n3 img,.dm.n4 img{aspect-ratio:1/1;height:100%}
+.dm .ph{display:flex;align-items:center;justify-content:center;min-height:180px;color:var(--tx3);font-size:13px;background:var(--bg)}
+.hint{font-size:12px;color:var(--warn);margin:6px 2px 0}
 .fc{font-size:12.5px;color:var(--tx2);border-left:3px solid var(--line);padding:2px 0 2px 10px;margin:8px 0}
 .warnbox{font-size:12.5px;color:var(--warn);margin:6px 0}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
@@ -102,7 +106,7 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const APP_VERSION="approve-v5";
+const APP_VERSION="approve-v6";
 const LS="xt-approvals-key-v1";
 const LD="xt-discarded-v1";
 const LSENT="xt-sent-v1";   // keys whose Post link was tapped on this device (local hint only)
@@ -116,6 +120,7 @@ const getLD=()=>{const a=store.get(LD,[]);return Array.isArray(a)?a:[];};
 const setLD=a=>store.set(LD,[...new Set(a)]);
 const getSent=()=>{const o=store.get(LSENT,{});return o&&typeof o==="object"&&!Array.isArray(o)?o:{};};
 const setSent=o=>store.set(LSENT,o);
+let KEY=null, MEDIA={};   // KEY = AES key in memory only; MEDIA[draftKey] = [{kind,alt,name,mime,url,file}|null]
 let ENV=null, DRAFTS=[], DATA=null, SYNCED=new Set();   // SYNCED = keys with a discard issue by the owner on GitHub
 
 // ---------- toast (one at a time; a token prevents stale timers from hiding a newer toast) ----------
@@ -141,7 +146,7 @@ async function tryRemembered(){
   const o=store.get(LS,null); if(!o) return false;
   try{ if(o.salt!==ENV.salt||o.iter!==ENV.iter) throw 0;
     const key=await crypto.subtle.importKey("raw",b64d(o.k),{name:"AES-GCM"},false,["decrypt"]);
-    show(await decryptWith(key)); return true;
+    const d=await decryptWith(key); KEY=key; show(d); return true;
   }catch(e){localStorage.removeItem(LS);return false;}
 }
 async function unlock(){
@@ -151,7 +156,7 @@ async function unlock(){
     const key=await deriveKey(pw,b64d(ENV.salt),ENV.iter);
     let data; try{data=await decryptWith(key);}catch(e){throw new Error("bad");}
     if($("remember").checked){const raw=await crypto.subtle.exportKey("raw",key);store.set(LS,{k:b64e(raw),salt:ENV.salt,iter:ENV.iter});}
-    $("pw").value=""; show(data);
+    KEY=key; $("pw").value=""; show(data);
   }catch(e){$("err").textContent=e.message==="bad"?"Wrong password. Try again.":"Could not unlock: "+e.message;}
   finally{$("unlock").disabled=false;$("unlock").textContent="Unlock";}
 }
@@ -200,6 +205,7 @@ setInterval(updateLive,30000);
 
 function card(d,i){
   const n=xlen(d.text),sentAt=isPending(d)?getSent()[d.key]:null;
+  const mk=(d.media&&d.media.length)?(d.media.length===1?d.media[0].kind:(d.media.every(m=>m.kind==="image")?"images":"media")):"";
   const p=d.parent&&!d.parent.missing&&!d.parent.unavailable?d.parent:null;
   const pms=p?pTime(p):(d.parent_id?tsFromId(d.parent_id):null);
   const st=isSynced(d)?["Discarded · synced to Grok Bot","ok"]:isLocalDiscard(d)?["Discarded (this device) · not synced yet","warn"]:(STATUS[d.status]||[d.status,""]);
@@ -218,12 +224,13 @@ function card(d,i){
       ${d.type==="reply"&&d.target?`<div class="ctx">Replying to <a href="https://x.com/${esc(d.target.replace(/^@/,""))}" target="_blank" rel="noopener">${esc(d.target)}</a></div>`:""}
       <div class="text">${esc(d.text)}</div>
       <div class="count ${n>280?"over":""}">${n} / 280${n>280?" · long post (Premium)":""}</div>
+      ${mediaPreview(d)}
       ${quoted}</div></div>`;
   return `<div class="card" data-key="${esc(d.key)}">${head}${thread}
     ${d.fact_check?`<div class="fc"><b>${d.type==="post"?"Source / fact check":"Fact check"}:</b> ${esc(d.fact_check)}</div>`:""}
     ${d.status==="posted"&&d.post_id?`<div class="fc"><a style="color:inherit" href="https://x.com/RohnSpringfield/status/${esc(d.post_id)}" target="_blank" rel="noopener">View your live post ↗</a></div>`:""}
     ${isPending(d)&&sentAt?`<div class="sent"><b>Sent?</b><span class="m">Opened in X ${esc(ageStr(sentAt))}. Confirmed after the nightly X read.</span><button type="button" data-act="unsent" data-i="${i}">Undo</button></div>`:""}
-    ${isPending(d)&&!sentAt?`<div class="actions"><a class="btn primary post" data-post="${i}" href="${esc(intent(d))}" target="_blank" rel="noopener">Post</a><button type="button" data-act="copy" data-i="${i}">Copy</button><button type="button" class="discard" data-act="discard" data-i="${i}">Discard</button></div>`:""}
+    ${isPending(d)&&!sentAt?`<div class="actions"><a class="btn primary post" data-post="${i}" href="${esc(intent(d))}" target="_blank" rel="noopener">Post</a>${mk?`<button type="button" data-act="save" data-i="${i}">Save ${mk}</button>`:""}<button type="button" data-act="copy" data-i="${i}">Copy</button><button type="button" class="discard" data-act="discard" data-i="${i}">Discard</button></div>${mk?`<div class="hint">Attach the saved ${mk} in X before posting.</div>`:""}`:""}
     ${isLocalDiscard(d)?`<div class="actions"><a class="btn primary" href="${esc(issueUrl(d.key))}" target="_blank" rel="noopener noreferrer">Sync to Grok Bot</a><button type="button" data-act="restore" data-i="${i}">Restore</button></div>`:""}
   </div>`;
 }
@@ -247,10 +254,46 @@ function render(){
   if(hist.some(([d])=>isLocalDiscard(d))) $("histWrap").open=true;
   updateLive();
 }
+// ---------- draft media: decrypt to object URLs (images are inline base64 in the payload; videos are separate AES-GCM blobs) ----------
+function mediaPreview(d){
+  if(!d.media||!d.media.length) return "";
+  const items=MEDIA[d.key]||[];
+  const n=Math.min(d.media.length,4);
+  return `<div class="dm n${n}">`+d.media.slice(0,4).map((m,j)=>{const it=items[j];
+    if(!it) return `<div class="ph">${m.kind==="video"?"Decrypting video…":"Loading image…"}</div>`;
+    if(it.err) return `<div class="ph">Could not load ${esc(m.kind)}.</div>`;
+    return m.kind==="video"?`<video src="${it.url}" controls playsinline preload="metadata" aria-label="${esc(m.alt)}"></video>`:`<img src="${it.url}" alt="${esc(m.alt)}">`;}).join("")+`</div>`;
+}
+async function prepMedia(){
+  const jobs=[];
+  DRAFTS.forEach(d=>{ if(!d.media||!d.media.length||MEDIA[d.key]) return; MEDIA[d.key]=[];
+    d.media.forEach((m,j)=>jobs.push((async()=>{
+      try{ let bytes;
+        if(m.kind==="video"){ const r=await fetch(m.src+"?v="+Date.now(),{cache:"no-store"}); if(!r.ok) throw new Error(r.status);
+          const b=new Uint8Array(await r.arrayBuffer()); bytes=await crypto.subtle.decrypt({name:"AES-GCM",iv:b.slice(0,12)},KEY,b.slice(12)); }
+        else bytes=b64d(m.data);
+        const file=new File([bytes],m.name||(d.key+(m.kind==="video"?".mp4":".png")),{type:m.mime});
+        MEDIA[d.key][j]={url:URL.createObjectURL(file),file,kind:m.kind};
+      }catch(e){ MEDIA[d.key][j]={err:true}; }
+    })()));
+  });
+  if(jobs.length){ await Promise.all(jobs); render(); }
+}
+// Save: iOS share sheet ("Save Image"/"Save Video" to Photos) when files can be shared; otherwise a download link.
+async function saveMedia(i){
+  const d=DRAFTS[i]; const files=(MEDIA[d.key]||[]).filter(x=>x&&x.file).map(x=>x.file);
+  if(!files.length){ toast("Media still loading, try again in a second."); return; }
+  if(navigator.canShare&&navigator.share&&navigator.canShare({files})){
+    try{ await navigator.share({files}); toast("Saved? Now attach it in X."); return; }
+    catch(e){ if(e&&e.name==="AbortError") return; }
+  }
+  files.forEach(f=>{ const a=document.createElement("a"); a.href=URL.createObjectURL(f); a.download=f.name; a.rel="noopener"; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000); });
+  toast(files.length>1?`Downloading ${files.length} files`:`Downloading ${files[0].name}`);
+}
 function show(data){
   DATA=data; DRAFTS=data.drafts||[];
   $("gate").classList.add("hidden");$("app").classList.remove("hidden");$("lock").classList.remove("hidden");
-  render(); refreshSynced();
+  render(); refreshSynced(); prepMedia();
 }
 
 // Discard: everything synchronous on the tap. No window.open (iOS blocks/ignores it in standalone);
@@ -276,7 +319,7 @@ function unsent(i){const d=DRAFTS[i]; if(!d) return; const o=getSent(); delete o
 $("app").addEventListener("click",e=>{
   const b=e.target.closest("[data-act]"); if(!b) return;
   e.preventDefault(); const i=+b.dataset.i;
-  if(b.dataset.act==="discard")discard(i); else if(b.dataset.act==="restore")restore(i); else if(b.dataset.act==="copy")copy(i); else if(b.dataset.act==="unsent")unsent(i);
+  if(b.dataset.act==="discard")discard(i); else if(b.dataset.act==="restore")restore(i); else if(b.dataset.act==="copy")copy(i); else if(b.dataset.act==="unsent")unsent(i); else if(b.dataset.act==="save")saveMedia(i);
 });
 
 // Cross-device: read public discard issues (title + author only) from the GitHub API.
@@ -299,7 +342,7 @@ async function refreshSynced(){
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&DATA)refreshSynced();});
 
 $("unlock").onclick=unlock;$("pw").addEventListener("keydown",e=>{if(e.key==="Enter")unlock();});
-$("lock").onclick=()=>{localStorage.removeItem(LS);DATA=null;DRAFTS=[];$("pending").innerHTML="";$("history").innerHTML="";$("app").classList.add("hidden");$("gate").classList.remove("hidden");$("lock").classList.add("hidden");$("sub").textContent="Locked";};
+$("lock").onclick=()=>{localStorage.removeItem(LS);KEY=null;Object.values(MEDIA).flat().forEach(x=>x&&x.url&&URL.revokeObjectURL(x.url));MEDIA={};DATA=null;DRAFTS=[];$("pending").innerHTML="";$("history").innerHTML="";$("app").classList.add("hidden");$("gate").classList.remove("hidden");$("lock").classList.add("hidden");$("sub").textContent="Locked";};
 fetch("drafts.enc.json?v="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}).then(async e=>{ENV=e;if(!(await tryRemembered()))$("pw").focus();})
   .catch(e=>{$("err").textContent="Could not load the encrypted drafts file.";});
 if("serviceWorker" in navigator){navigator.serviceWorker.register("../sw.js",{scope:"../",updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});}

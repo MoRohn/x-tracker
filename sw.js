@@ -1,6 +1,6 @@
 // X Tracker service worker. Network-first for everything (HTML, JS, JSON) so updates arrive immediately;
 // the cache is only an offline fallback. Old caches are deleted and a new SW takes over at once.
-const C = "xt-v5";
+const C = "xt-v6";
 const SHELL = ["./", "index.html", "approve/", "approve/index.html", "manifest.webmanifest", "icons/icon-192.png"];
 self.addEventListener("install", e => {
   self.skipWaiting();
@@ -18,7 +18,7 @@ self.addEventListener("fetch", e => {
       const r = req.mode === "navigate"
         ? await fetch(req.url, { cache: "no-store", credentials: "same-origin" })
         : await fetch(req, { cache: "no-store" });
-      if (r.ok) { const cp = r.clone(); caches.open(C).then(c => c.put(req, cp)); }
+      if (r.ok && !new URL(req.url).pathname.includes("/approve/media/")) { const cp = r.clone(); caches.open(C).then(c => c.put(req, cp)); }
       return r;
     } catch (err) {
       return (await caches.match(req, { ignoreSearch: true })) || Response.error();
