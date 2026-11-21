@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Post Approvals · @RohnSpringfield</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b1220">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="X Tracker">
+<style>
+:root{--bg:#0b1220;--card:#121a2b;--line:#22304a;--tx:#e6edf7;--tx2:#9fb0c8;--tx3:#6b7d99;--c0:#1d9bf0;--warn:#f5b400;--bad:#f4606c;--ok:#36c08a}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;-webkit-text-size-adjust:100%}
+body{padding:calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 12px) calc(env(safe-area-inset-bottom) + 24px) calc(env(safe-area-inset-left) + 12px)}
+.wrap{max-width:760px;margin:0 auto}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+h1{font-size:19px;margin:0;font-weight:650}.sub{color:var(--tx3);font-size:12px;margin-top:2px}
+.tabs{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:2px;flex-wrap:wrap}
+.tabs a{padding:5px 11px;border-radius:8px;color:var(--tx2);font-size:12px;font-weight:600;text-decoration:none}.tabs a.on{background:var(--line);color:var(--tx)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+input[type=password]{width:100%;font-size:16px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--tx);margin:8px 0}
+label.chk{display:flex;align-items:center;gap:8px;color:var(--tx2);font-size:13px;margin:4px 0 10px}
+button,.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;border-radius:10px;font-weight:650;font-size:13px;background:var(--line);color:var(--tx);text-align:center}
+.btn.primary,button.primary{background:var(--c0);color:#fff}
+button:disabled{opacity:.6;cursor:default}
+.err{color:var(--bad);font-size:13px;min-height:18px}
+h2{font-size:13px;margin:16px 2px 8px;color:var(--tx2);font-weight:650;text-transform:uppercase;letter-spacing:.04em}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--tx2);margin-bottom:8px}
+.pill{display:inline-block;background:var(--line);color:var(--tx2);border-radius:99px;padding:2px 9px;font-size:11px;font-weight:650}
+.pill.type{background:rgba(29,155,240,.18);color:#8fcbff}.pill.warn{background:rgba(245,180,0,.16);color:var(--warn)}.pill.ok{background:rgba(54,192,138,.16);color:var(--ok)}
+.meta a{color:var(--tx);text-decoration:none;border-bottom:1px dotted var(--tx3)}
+.text{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14.5px;margin:6px 0}
+.count{font-size:11px;color:var(--tx3);text-align:right}.count.over{color:var(--warn)}
+.fc{font-size:12.5px;color:var(--tx2);border-left:3px solid var(--line);padding:2px 0 2px 10px;margin:8px 0}
+.warnbox{font-size:12.5px;color:var(--warn);margin:6px 0}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+details>summary{cursor:pointer;color:var(--tx2);font-weight:650;font-size:13px;padding:6px 2px}
+.hidden{display:none}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 20px);transform:translateX(-50%);background:var(--line);color:var(--tx);padding:8px 14px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .2s}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>Post Approvals 🔒</h1><div class="sub" id="sub">Private · encrypted in your browser</div></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <nav class="tabs"><a href="../">Dashboard</a><a href="./" class="on">Approvals 🔒</a></nav>
+      <button id="lock" class="hidden" title="Forget the key on this device">Lock</button>
+    </div>
+  </header>
+
+  <section id="gate" class="card">
+    <div style="font-weight:650">Enter your approvals password</div>
+    <input id="pw" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password">
+    <label class="chk"><input type="checkbox" id="remember"> Remember on this device (stores a derived key, not the password)</label>
+    <button class="primary" id="unlock">Unlock</button>
+    <div class="err" id="err" role="alert"></div>
+  </section>
+
+  <section id="app" class="hidden">
+    <div id="pending"></div>
+    <details id="histWrap" class="card"><summary id="histSum">History</summary><div id="history"></div></details>
+    <p class="sub">Buttons open X with the text prefilled. Nothing is sent until you press Post in X.</p>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const LS="xt-approvals-key-v1";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const b64e=b=>btoa(String.fromCharCode(...new Uint8Array(b)));
+let ENV=null;
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1600);}
+
+async function deriveKey(pw,salt,iter){
+  const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",hash:"SHA-256",salt,iterations:iter},base,{name:"AES-GCM",length:256},true,["decrypt"]);
+}
+async function decryptWith(key){
+  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64d(ENV.iv)},key,b64d(ENV.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+async function tryRemembered(){
+  const s=localStorage.getItem(LS); if(!s) return false;
+  try{const o=JSON.parse(s); if(o.salt!==ENV.salt||o.iter!==ENV.iter) throw 0;
+    const key=await crypto.subtle.importKey("raw",b64d(o.k),{name:"AES-GCM"},false,["decrypt"]);
+    show(await decryptWith(key)); return true;
+  }catch(e){localStorage.removeItem(LS);return false;}
+}
+async function unlock(){
+  const pw=$("pw").value; if(!pw){$("err").textContent="Enter the password.";return;}
+  $("err").textContent=""; $("unlock").disabled=true; $("unlock").textContent="Unlocking…";
+  try{
+    const key=await deriveKey(pw,b64d(ENV.salt),ENV.iter);
+    let data; try{data=await decryptWith(key);}catch(e){throw new Error("bad");}
+    if($("remember").checked){const raw=await crypto.subtle.exportKey("raw",key);localStorage.setItem(LS,JSON.stringify({k:b64e(raw),salt:ENV.salt,iter:ENV.iter}));}
+    $("pw").value=""; show(data);
+  }catch(e){$("err").textContent=e.message==="bad"?"Wrong password. Try again.":"Could not unlock: "+e.message;}
+  finally{$("unlock").disabled=false;$("unlock").textContent="Unlock";}
+}
+// X-style weighted length: URLs = 23, most CJK/emoji = 2
+function xlen(t){
+  const urls=t.match(/https?:\/\/\S+/g)||[]; let s=t; urls.forEach(u=>s=s.replace(u,""));
+  let n=urls.length*23; for(const ch of s){const c=ch.codePointAt(0); n+=(c<=4351||(c>=8192&&c<=8205)||(c>=8208&&c<=8223)||(c>=8242&&c<=8247))?1:2;} return n;
+}
+const tsFromId=id=>{try{return Number((BigInt(id)>>22n)+1288834974657n);}catch(e){return null;}};
+function slotET(s){if(!s||s==="asap")return "ASAP";const d=new Date(s);return d.toLocaleString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" ET";}
+function ago(ms){const h=(Date.now()-ms)/36e5;return h<1?`${Math.round(h*60)} min`:h<48?`${h.toFixed(1)} h`:`${Math.round(h/24)} d`;}
+function intent(d){
+  const p=new URLSearchParams({text:d.text});
+  if(d.type==="reply"&&d.parent_id)p.set("in_reply_to",d.parent_id);
+  if(d.type==="quote"&&d.parent_id)p.set("url",`https://x.com/${(d.target||"i").replace(/^@/,"")}/status/${d.parent_id}`);
+  return "https://x.com/intent/post?"+p.toString();
+}
+const STATUS={drafted:["Drafted · needs your OK",""],approved:["Approved · awaiting your tap","ok"],posted:["Posted","ok"],discarded:["Discarded",""]};
+function card(d,i){
+  const n=xlen(d.text),verb=d.type==="reply"?"Reply on X":d.type==="quote"?"Quote on X":"Post on X";
+  const tgt=d.target?d.target.replace(/^@/,""):null;
+  const turl=d.parent_id?`https://x.com/${tgt||"i"}/status/${d.parent_id}`:null;
+  const pt=d.parent_id?tsFromId(d.parent_id):null;
+  const old=pt&&d.type==="reply"&&(Date.now()-pt)>2*36e5;
+  const st=STATUS[d.status]||[d.status,""];
+  return `<div class="card">
+    <div class="meta"><span class="pill type">${esc(d.type)}</span><b>${esc(d.key)}</b>
+      ${tgt?`<span>→ <a href="${esc(turl)}" target="_blank" rel="noopener">${esc(d.target)}</a></span>`:""}
+      <span>· ${esc(slotET(d.slot))}</span>${pt?`<span>· target posted ${ago(pt)} ago</span>`:""}
+      <span class="pill ${st[1]}">${esc(st[0])}</span>${d.pillar?`<span class="pill">${esc(d.pillar)}</span>`:""}</div>
+    ${old?`<div class="warnbox">⚠ Reply window: the target post is ${ago(pt)} old (over 2 h). Replies this late get far less reach.</div>`:""}
+    <div class="text">${esc(d.text)}</div>
+    <div class="count ${n>280?"over":""}">${n} / 280${n>280?" · long post (Premium)":""}</div>
+    ${d.fact_check?`<div class="fc"><b>Fact check:</b> ${esc(d.fact_check)}</div>`:""}
+    ${d.status==="posted"&&d.post_id?`<div class="fc"><a style="color:inherit" href="https://x.com/RohnSpringfield/status/${esc(d.post_id)}" target="_blank" rel="noopener">View live post</a></div>`:""}
+    ${(d.status==="drafted"||d.status==="approved")?`<div class="actions"><a class="btn primary" href="${esc(intent(d))}" target="_blank" rel="noopener">${verb}</a><button data-copy="${i}">Copy text</button></div>`:""}
+  </div>`;
+}
+let DRAFTS=[];
+function show(data){
+  DRAFTS=data.drafts||[];
+  $("gate").classList.add("hidden");$("app").classList.remove("hidden");$("lock").classList.remove("hidden");
+  $("sub").textContent=`Updated ${data.built_et} · ${DRAFTS.filter(d=>d.status==="drafted"||d.status==="approved").length} pending`;
+  const pend=DRAFTS.map((d,i)=>[d,i]).filter(([d])=>d.status==="drafted"||d.status==="approved");
+  const groups={};pend.forEach(([d,i])=>{const g=`${d.batch||"Batch"} · ${d.slot==="asap"?"Replies (ASAP)":slotET(d.slot)}`;(groups[g]=groups[g]||[]).push([d,i]);});
+  const order=Object.keys(groups).sort((a,b)=>{const sa=groups[a][0][0].slot,sb=groups[b][0][0].slot;return (sa==="asap"?"":sa).localeCompare(sb==="asap"?"":sb);});
+  $("pending").innerHTML=order.length?order.map(g=>`<h2>${esc(g)}</h2>`+groups[g].map(([d,i])=>card(d,i)).join("")).join(""):`<div class="card">Nothing pending. New drafts appear here after each batch.</div>`;
+  const hist=DRAFTS.map((d,i)=>[d,i]).filter(([d])=>d.status==="posted"||d.status==="discarded");
+  $("histSum").textContent=`History (${hist.length})`;$("history").innerHTML=hist.map(([d,i])=>card(d,i)).join("");
+  $("histWrap").classList.toggle("hidden",!hist.length);
+  document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=async()=>{const t=DRAFTS[+b.dataset.copy].text;
+    try{await navigator.clipboard.writeText(t);}catch(e){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();}
+    toast("Copied");});
+}
+$("unlock").onclick=unlock;$("pw").addEventListener("keydown",e=>{if(e.key==="Enter")unlock();});
+$("lock").onclick=()=>{localStorage.removeItem(LS);DRAFTS=[];$("pending").innerHTML="";$("history").innerHTML="";$("app").classList.add("hidden");$("gate").classList.remove("hidden");$("lock").classList.add("hidden");$("sub").textContent="Locked";};
+fetch("drafts.enc.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}).then(async e=>{ENV=e;if(!(await tryRemembered()))$("pw").focus();})
+  .catch(e=>{$("err").textContent="Could not load the encrypted drafts file.";});
+</script>
+</body>
+</html>
