@@ -42,7 +42,9 @@ h2{font-size:13px;margin:16px 2px 8px;color:var(--tx2);font-weight:650;text-tran
 details>summary{cursor:pointer;color:var(--tx2);font-weight:650;font-size:13px;padding:6px 2px}
 .hidden{display:none}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 20px);transform:translateX(-50%);background:var(--line);color:var(--tx);padding:8px 14px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .2s}
-.toast.on{opacity:1}
+.toast.on{opacity:1;pointer-events:auto}
+.toast{display:flex;gap:12px;align-items:center;max-width:92vw;pointer-events:none}.toast button{padding:4px 10px;font-size:12px;background:var(--c0);color:#fff}
+button.discard{background:transparent;border:1px solid var(--line);color:var(--tx2)}
 </style>
 </head>
 <body>
@@ -66,18 +68,25 @@ details>summary{cursor:pointer;color:var(--tx2);font-weight:650;font-size:13px;p
   <section id="app" class="hidden">
     <div id="pending"></div>
     <details id="histWrap" class="card"><summary id="histSum">History</summary><div id="history"></div></details>
-    <p class="sub">Buttons open X with the text prefilled. Nothing is sent until you press Post in X.</p>
+    <p class="sub">Buttons open X with the text prefilled. Nothing is sent until you press Post in X. Discard hides a draft on this device and opens a GitHub issue (key only) so the box drops it from the queue on the next publish.</p>
   </section>
 </div>
 <div class="toast" id="toast"></div>
 <script>
 const LS="xt-approvals-key-v1";
+const LD="xt-discarded-v1";
+const REPO="MoRohn/x-tracker";
+const getLD=()=>{try{return JSON.parse(localStorage.getItem(LD)||"[]");}catch(e){return [];}};
+const setLD=a=>localStorage.setItem(LD,JSON.stringify([...new Set(a)]));
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const b64e=b=>btoa(String.fromCharCode(...new Uint8Array(b)));
 let ENV=null;
-function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1600);}
+let toastTimer=null;
+function toast(m,undo,ms){const t=$("toast");t.innerHTML="";const sp=document.createElement("span");sp.textContent=m;t.appendChild(sp);
+  if(undo){const b=document.createElement("button");b.textContent="Undo";b.onclick=()=>{undo();t.classList.remove("on");};t.appendChild(b);}
+  t.classList.add("on");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("on"),ms||1600);}
 
 async function deriveKey(pw,salt,iter){
   const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);
@@ -120,13 +129,15 @@ function intent(d){
   return "https://x.com/intent/post?"+p.toString();
 }
 const STATUS={drafted:["Drafted · needs your OK",""],approved:["Approved · awaiting your tap","ok"],posted:["Posted","ok"],discarded:["Discarded",""]};
+const isLocalDiscard=d=>(d.status==="drafted"||d.status==="approved")&&getLD().includes(d.key);
+const isPending=d=>(d.status==="drafted"||d.status==="approved")&&!getLD().includes(d.key);
 function card(d,i){
   const n=xlen(d.text),verb=d.type==="reply"?"Reply on X":d.type==="quote"?"Quote on X":"Post on X";
   const tgt=d.target?d.target.replace(/^@/,""):null;
   const turl=d.parent_id?`https://x.com/${tgt||"i"}/status/${d.parent_id}`:null;
   const pt=d.parent_id?tsFromId(d.parent_id):null;
   const old=pt&&d.type==="reply"&&(Date.now()-pt)>2*36e5;
-  const st=STATUS[d.status]||[d.status,""];
+  const st=isLocalDiscard(d)?["Discarded (this device)",""]:(STATUS[d.status]||[d.status,""]);
   return `<div class="card">
     <div class="meta"><span class="pill type">${esc(d.type)}</span><b>${esc(d.key)}</b>
       ${tgt?`<span>→ <a href="${esc(turl)}" target="_blank" rel="noopener">${esc(d.target)}</a></span>`:""}
@@ -137,24 +148,32 @@ function card(d,i){
     <div class="count ${n>280?"over":""}">${n} / 280${n>280?" · long post (Premium)":""}</div>
     ${d.fact_check?`<div class="fc"><b>Fact check:</b> ${esc(d.fact_check)}</div>`:""}
     ${d.status==="posted"&&d.post_id?`<div class="fc"><a style="color:inherit" href="https://x.com/RohnSpringfield/status/${esc(d.post_id)}" target="_blank" rel="noopener">View live post</a></div>`:""}
-    ${(d.status==="drafted"||d.status==="approved")?`<div class="actions"><a class="btn primary" href="${esc(intent(d))}" target="_blank" rel="noopener">${verb}</a><button data-copy="${i}">Copy text</button></div>`:""}
+    ${isPending(d)?`<div class="actions"><a class="btn primary" href="${esc(intent(d))}" target="_blank" rel="noopener">${verb}</a><button data-copy="${i}">Copy text</button><button class="discard" data-discard="${i}">Discard</button></div>`:""}
+    ${isLocalDiscard(d)?`<div class="actions"><button data-restore="${i}">Restore</button></div>`:""}
   </div>`;
 }
-let DRAFTS=[];
-function show(data){
+let DRAFTS=[],DATA=null;
+function issueUrl(key){const q=new URLSearchParams({title:`discard: ${key}`,body:`Discard request for queue key ${key}, sent from the approvals page.\n\nKey only; no draft text. The box closes this issue after marking the draft discarded.`});return `https://github.com/${REPO}/issues/new?${q}`;}
+function discard(i){const d=DRAFTS[i];
+  window.open(issueUrl(d.key),"_blank","noopener");
+  setLD([...getLD(),d.key]);show(DATA);
+  toast(`Discarded ${d.key}. Submit the GitHub issue to sync.`,()=>{setLD(getLD().filter(k=>k!==d.key));show(DATA);toast("Restored. Don't submit the issue.");},7000);}
+function show(data){DATA=data;
   DRAFTS=data.drafts||[];
   $("gate").classList.add("hidden");$("app").classList.remove("hidden");$("lock").classList.remove("hidden");
-  $("sub").textContent=`Updated ${data.built_et} · ${DRAFTS.filter(d=>d.status==="drafted"||d.status==="approved").length} pending`;
-  const pend=DRAFTS.map((d,i)=>[d,i]).filter(([d])=>d.status==="drafted"||d.status==="approved");
+  $("sub").textContent=`Updated ${data.built_et} · ${DRAFTS.filter(isPending).length} pending`;
+  const pend=DRAFTS.map((d,i)=>[d,i]).filter(([d])=>isPending(d));
   const groups={};pend.forEach(([d,i])=>{const g=`${d.batch||"Batch"} · ${d.slot==="asap"?"Replies (ASAP)":slotET(d.slot)}`;(groups[g]=groups[g]||[]).push([d,i]);});
   const order=Object.keys(groups).sort((a,b)=>{const sa=groups[a][0][0].slot,sb=groups[b][0][0].slot;return (sa==="asap"?"":sa).localeCompare(sb==="asap"?"":sb);});
   $("pending").innerHTML=order.length?order.map(g=>`<h2>${esc(g)}</h2>`+groups[g].map(([d,i])=>card(d,i)).join("")).join(""):`<div class="card">Nothing pending. New drafts appear here after each batch.</div>`;
-  const hist=DRAFTS.map((d,i)=>[d,i]).filter(([d])=>d.status==="posted"||d.status==="discarded");
+  const hist=DRAFTS.map((d,i)=>[d,i]).filter(([d])=>d.status==="posted"||d.status==="discarded"||isLocalDiscard(d));
   $("histSum").textContent=`History (${hist.length})`;$("history").innerHTML=hist.map(([d,i])=>card(d,i)).join("");
   $("histWrap").classList.toggle("hidden",!hist.length);
   document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=async()=>{const t=DRAFTS[+b.dataset.copy].text;
     try{await navigator.clipboard.writeText(t);}catch(e){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();}
     toast("Copied");});
+  document.querySelectorAll("[data-discard]").forEach(b=>b.onclick=()=>discard(+b.dataset.discard));
+  document.querySelectorAll("[data-restore]").forEach(b=>b.onclick=()=>{const k=DRAFTS[+b.dataset.restore].key;setLD(getLD().filter(x=>x!==k));show(DATA);toast("Restored on this device. If you submitted the discard issue, close it on GitHub.",null,4000);});
 }
 $("unlock").onclick=unlock;$("pw").addEventListener("keydown",e=>{if(e.key==="Enter")unlock();});
 $("lock").onclick=()=>{localStorage.removeItem(LS);DRAFTS=[];$("pending").innerHTML="";$("history").innerHTML="";$("app").classList.add("hidden");$("gate").classList.remove("hidden");$("lock").classList.add("hidden");$("sub").textContent="Locked";};
