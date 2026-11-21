@@ -45,6 +45,33 @@ details>summary{cursor:pointer;color:var(--tx2);font-weight:650;font-size:13px;p
 .toast.on{opacity:1;pointer-events:auto}
 .toast{display:flex;gap:10px;align-items:center;flex-wrap:wrap;max-width:94vw;pointer-events:none;z-index:50}.toast button,.toast a{all:unset;cursor:pointer;padding:6px 11px;border-radius:8px;font-size:12.5px;font-weight:650;background:var(--bg);color:var(--tx)}.toast a.sync{background:var(--c0);color:#fff}
 button.discard{background:transparent;border:1px solid var(--line);color:var(--tx2)}
+
+/* thread view */
+.tw{display:grid;grid-template-columns:40px 1fr;column-gap:10px}
+.tw .av{width:40px;height:40px;border-radius:50%;background:var(--line);object-fit:cover;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--tx2)}
+.tw .rail{display:flex;flex-direction:column;align-items:center}
+.tw .line{flex:1;width:2px;background:var(--line);margin:4px 0;min-height:14px}
+.tw .body{min-width:0;padding-bottom:12px}
+.who{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:13.5px}
+.who b{color:var(--tx)}.who .h,.who .t{color:var(--tx3)}
+.vf{display:inline-flex;width:15px;height:15px;border-radius:50%;background:var(--c0);color:#fff;font-size:10px;align-items:center;justify-content:center;font-weight:800}
+.ctx{font-size:12.5px;color:var(--tx3);margin:2px 0}.ctx a{color:var(--c0);text-decoration:none}
+.ptext{white-space:pre-wrap;word-wrap:break-word;font-size:14.5px;margin:4px 0 6px;color:var(--tx)}
+.ptext a{color:var(--c0);text-decoration:none;word-break:break-all}
+.media{display:grid;gap:3px;border-radius:14px;overflow:hidden;margin:6px 0;border:1px solid var(--line)}
+.media.n2,.media.n3,.media.n4{grid-template-columns:1fr 1fr}
+.media img{width:100%;height:100%;object-fit:cover;display:block;max-height:260px;background:var(--bg)}
+.media.n1 img{max-height:340px;object-fit:contain}
+.media .vid{position:relative}.media .vid:after{content:"▶";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;text-shadow:0 2px 8px #000}
+.pm{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--tx3);margin:4px 0}
+.pm a{color:var(--c0);text-decoration:none;font-weight:600}
+.qt{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:8px 0}
+.qt .who{font-size:12.5px}.qt .ptext{font-size:13.5px}
+.qt img.sav{width:20px;height:20px;border-radius:50%;object-fit:cover}
+.unav{border:1px dashed var(--line);border-radius:12px;padding:10px 12px;color:var(--tx2);font-size:13px}
+.win{display:inline-block;border-radius:99px;padding:2px 9px;font-size:11px;font-weight:700}
+.win.ok{background:rgba(54,192,138,.16);color:var(--ok)}.win.late{background:rgba(245,180,0,.16);color:var(--warn)}
+.draftlbl{font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -73,7 +100,7 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const APP_VERSION="approve-v3";
+const APP_VERSION="approve-v4";
 const LS="xt-approvals-key-v1";
 const LD="xt-discarded-v1";
 const REPO="MoRohn/x-tracker", OWNER="morohn";
@@ -145,23 +172,51 @@ const isLocalDiscard=d=>open_(d)&&!SYNCED.has(d.key)&&getLD().includes(d.key);
 const isPending=d=>open_(d)&&!SYNCED.has(d.key)&&!getLD().includes(d.key);
 const STATUS={drafted:["Drafted · needs your OK",""],approved:["Approved · awaiting your tap","ok"],posted:["Posted","ok"],discarded:["Discarded",""]};
 
+const nf=n=>n==null?"—":n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M":n>=1e4?Math.round(n/1e3)+"K":n>=1e3?(n/1e3).toFixed(1).replace(/\.0$/,"")+"K":String(n);
+function ageStr(ms){const m=Math.max(0,Math.round((Date.now()-ms)/6e4));if(m<60)return `${m}m ago`;const h=Math.floor(m/60);if(h<24)return `${h}h ${m%60}m ago`;const d=Math.floor(h/24);return `${d}d ${h%24}h ago`;}
+function whenStr(ms){return new Date(ms).toLocaleString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" ET";}
+function linkify(t){return esc(t).replace(/(https?:\/\/[^\s<]+)/g,u=>`<a href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\//,"").slice(0,48)}${u.length>56?"…":""}</a>`).replace(/(^|[\s(])@([A-Za-z0-9_]{1,15})/g,(m,a,hn)=>`${a}<a href="https://x.com/${hn}" target="_blank" rel="noopener">@${hn}</a>`);}
+function avatar(u,cls="av"){return u&&u.avatar?`<img class="${cls}" src="${esc(u.avatar)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:`<div class="${cls}">${esc(((u&&(u.name||u.username))||"?").slice(0,1))}</div>`;}
+function who(u,ms){if(!u)return "";return `<div class="who"><b>${esc(u.name||u.username)}</b>${u.verified?`<span class="vf" title="Verified">✓</span>`:""}<span class="h">@${esc(u.username)}</span>${u.followers!=null?`<span class="t">· ${nf(u.followers)} followers</span>`:""}${ms?`<span class="t">· ${whenStr(ms)} · <span data-age="${ms}">${ageStr(ms)}</span></span>`:""}</div>`;}
+function mediaGrid(ms){if(!ms||!ms.length)return "";const n=Math.min(ms.length,4);return `<div class="media n${n}">`+ms.slice(0,4).map(m=>{const src=(m.type==="photo"?m.url:m.preview)||m.url;if(!src)return "";const s=src.includes("pbs.twimg.com/media/")&&!src.includes("?")?src+"?name=small":src;return `<div class="${m.type==="photo"?"":"vid"}"><img src="${esc(s)}" alt="${esc(m.alt||m.type)}" loading="lazy" referrerpolicy="no-referrer"></div>`;}).join("")+`</div>`;}
+function metrics(p){const m=p.metrics||{};return `<div class="pm"><span>👁 ${nf(m.views)}</span><span>💬 ${nf(m.replies)}</span><span>🔁 ${nf(m.reposts)}</span><span>♥ ${nf(m.likes)}</span><a href="${esc(p.url)}" target="_blank" rel="noopener">Open on X ↗</a></div>`;}
+const pTime=p=>p&&p.created_at?Date.parse(p.created_at):(p&&p.id?tsFromId(p.id):null);
+function quoteEmbed(q){if(!q)return "";const ms=pTime(q);return `<div class="qt"><div class="who">${q.author&&q.author.avatar?`<img class="sav" src="${esc(q.author.avatar)}" alt="" referrerpolicy="no-referrer">`:""}<b>${esc(q.author?(q.author.name||q.author.username):"Post")}</b>${q.author&&q.author.verified?`<span class="vf">✓</span>`:""}${q.author?`<span class="h">@${esc(q.author.username)}</span>`:""}${ms?`<span class="t">· <span data-age="${ms}">${ageStr(ms)}</span></span>`:""}</div>${q.replying_to?`<div class="ctx">Replying to ${linkify(q.replying_to)}</div>`:""}<div class="ptext">${linkify(q.text||"")}</div>${mediaGrid(q.media)}<div class="pm"><span>👁 ${nf(q.metrics&&q.metrics.views)}</span><span>♥ ${nf(q.metrics&&q.metrics.likes)}</span><a href="${esc(q.url)}" target="_blank" rel="noopener">Open on X ↗</a></div></div>`;}
+function unavailable(d){const p=d.parent||{};const url=`https://x.com/${(d.target||"i").replace(/^@/,"")}/status/${d.parent_id}`;
+  return `<div class="unav">${p.unavailable?`Original post unavailable on X (${esc(p.reason||"deleted or protected")}).`:`Original post not loaded yet.`} <a style="color:var(--c0)" href="${esc(url)}" target="_blank" rel="noopener">Open on X ↗</a></div>`;}
+function windowBadge(ms){return `<span class="win" data-win="${ms}"></span>`;}
+function updateLive(){
+  document.querySelectorAll("[data-age]").forEach(el=>el.textContent=ageStr(+el.dataset.age));
+  document.querySelectorAll("[data-win]").forEach(el=>{const left=2*36e5-(Date.now()-(+el.dataset.win));
+    if(left>0){const m=Math.ceil(left/6e4);el.className="win ok";el.textContent=`Reply window: ${m>=60?Math.floor(m/60)+"h "+(m%60)+"m":m+"m"} left`;}
+    else{el.className="win late";el.textContent=`Reply window passed (${ageStr(+el.dataset.win).replace(" ago","")} old)`;}});
+}
+setInterval(updateLive,30000);
+
 function card(d,i){
   const n=xlen(d.text),verb=d.type==="reply"?"Reply on X":d.type==="quote"?"Quote on X":"Post on X";
-  const tgt=d.target?d.target.replace(/^@/,""):null;
-  const turl=d.parent_id?`https://x.com/${tgt||"i"}/status/${d.parent_id}`:null;
-  const pt=d.parent_id?tsFromId(d.parent_id):null;
-  const old=pt&&d.type==="reply"&&(Date.now()-pt)>2*36e5;
+  const p=d.parent&&!d.parent.missing&&!d.parent.unavailable?d.parent:null;
+  const pms=p?pTime(p):(d.parent_id?tsFromId(d.parent_id):null);
   const st=isSynced(d)?["Discarded · synced to Grok Bot","ok"]:isLocalDiscard(d)?["Discarded (this device) · not synced yet","warn"]:(STATUS[d.status]||[d.status,""]);
-  return `<div class="card" data-key="${esc(d.key)}">
-    <div class="meta"><span class="pill type">${esc(d.type)}</span><b>${esc(d.key)}</b>
-      ${tgt?`<span>→ <a href="${esc(turl)}" target="_blank" rel="noopener">${esc(d.target)}</a></span>`:""}
-      <span>· ${esc(slotET(d.slot))}</span>${pt?`<span>· target posted ${ago(pt)} ago</span>`:""}
-      <span class="pill ${st[1]}">${esc(st[0])}</span>${d.pillar?`<span class="pill">${esc(d.pillar)}</span>`:""}</div>
-    ${old&&isPending(d)?`<div class="warnbox">⚠ Reply window: the target post is ${ago(pt)} old (over 2 h). Replies this late get far less reach.</div>`:""}
-    <div class="text">${esc(d.text)}</div>
-    <div class="count ${n>280?"over":""}">${n} / 280${n>280?" · long post (Premium)":""}</div>
-    ${d.fact_check?`<div class="fc"><b>Fact check:</b> ${esc(d.fact_check)}</div>`:""}
-    ${d.status==="posted"&&d.post_id?`<div class="fc"><a style="color:inherit" href="https://x.com/RohnSpringfield/status/${esc(d.post_id)}" target="_blank" rel="noopener">View live post</a></div>`:""}
+  const me=(DATA&&DATA.me)||{name:"Rohn Springfield",username:"RohnSpringfield"};
+  const head=`<div class="meta"><span class="pill type">${esc(d.type)}</span><b>${esc(d.key)}</b><span>· ${esc(slotET(d.slot))}</span>
+      <span class="pill ${st[1]}">${esc(st[0])}</span>${d.pillar?`<span class="pill">${esc(d.pillar)}</span>`:""}${d.type==="reply"&&pms&&isPending(d)?windowBadge(pms):""}</div>`;
+  // parent on top (replies only; quotes embed the parent under the draft, as X does)
+  let thread="";
+  if(d.type==="reply"){
+    thread+= p?`<div class="tw"><div class="rail">${avatar(p.author)}<div class="line"></div></div><div class="body">${who(p.author,pms)}${p.replying_to?`<div class="ctx">Replying to ${linkify(p.replying_to)}</div>`:""}<div class="ptext">${linkify(p.text||"")}</div>${mediaGrid(p.media)}${quoteEmbed(p.quoted)}${metrics(p)}</div></div>`
+             :`<div style="margin-bottom:10px">${unavailable(d)}</div>`;
+  }
+  const quoted=d.type==="quote"?(p?quoteEmbed(Object.assign({},p,{media:p.media})):unavailable(d)):"";
+  thread+=`<div class="tw"><div class="rail">${avatar(me)}</div><div class="body" style="padding-bottom:0">
+      <div class="draftlbl">Your draft</div>${who({name:me.name,username:me.username,verified:true},null)}
+      ${d.type==="reply"&&d.target?`<div class="ctx">Replying to <a href="https://x.com/${esc(d.target.replace(/^@/,""))}" target="_blank" rel="noopener">${esc(d.target)}</a></div>`:""}
+      <div class="text">${esc(d.text)}</div>
+      <div class="count ${n>280?"over":""}">${n} / 280${n>280?" · long post (Premium)":""}</div>
+      ${quoted}</div></div>`;
+  return `<div class="card" data-key="${esc(d.key)}">${head}${thread}
+    ${d.fact_check?`<div class="fc"><b>${d.type==="post"?"Source / fact check":"Fact check"}:</b> ${esc(d.fact_check)}</div>`:""}
+    ${d.status==="posted"&&d.post_id?`<div class="fc"><a style="color:inherit" href="https://x.com/RohnSpringfield/status/${esc(d.post_id)}" target="_blank" rel="noopener">View your live post ↗</a></div>`:""}
     ${isPending(d)?`<div class="actions"><a class="btn primary" href="${esc(intent(d))}" target="_blank" rel="noopener">${verb}</a><button type="button" data-act="copy" data-i="${i}">Copy text</button><button type="button" class="discard" data-act="discard" data-i="${i}">Discard</button></div>`:""}
     ${isLocalDiscard(d)?`<div class="actions"><a class="btn primary" href="${esc(issueUrl(d.key))}" target="_blank" rel="noopener noreferrer">Sync to Grok Bot</a><button type="button" data-act="restore" data-i="${i}">Restore</button></div>`:""}
   </div>`;
@@ -182,6 +237,7 @@ function render(){
   $("history").innerHTML=hist.map(([d,i])=>card(d,i)).join("");
   $("histWrap").classList.toggle("hidden",!hist.length);
   if(hist.some(([d])=>isLocalDiscard(d))) $("histWrap").open=true;
+  updateLive();
 }
 function show(data){
   DATA=data; DRAFTS=data.drafts||[];
