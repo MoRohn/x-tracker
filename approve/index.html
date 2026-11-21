@@ -23,6 +23,9 @@ h1{font-size:19px;margin:0;font-weight:650}.sub{color:var(--tx3);font-size:12px;
 .tabs{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:2px;flex-wrap:wrap}
 .tabs a{padding:5px 11px;border-radius:8px;color:var(--tx2);font-size:12px;font-weight:600;text-decoration:none}.tabs a.on{background:var(--line);color:var(--tx)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.card.out{transform:translateX(110%);opacity:0;transition:transform .32s ease-in,opacity .32s ease-in}
+.sentrow{margin-top:10px}.sentrow .m{font-size:12px;color:var(--tx2);margin:0 2px 8px}.sentrow .actions{margin-top:0}.sentrow .sentbtn{flex:3 1 0;padding:13px 16px;font-size:16px;font-weight:750;background:var(--ok);color:#06231a}.sentrow [data-act=unsent]{flex:1 1 0;font-size:12px;padding:10px 8px}
+.undo{margin-top:8px}.undo button{padding:6px 12px;font-size:12px}
 input[type=password]{width:100%;font-size:16px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--tx);margin:8px 0}
 label.chk{display:flex;align-items:center;gap:8px;color:var(--tx2);font-size:13px;margin:4px 0 10px}
 button,.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;border-radius:10px;font-weight:650;font-size:13px;background:var(--line);color:var(--tx);text-align:center}
@@ -107,9 +110,10 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const APP_VERSION="approve-v7";
+const APP_VERSION="approve-v8";
 const LS="xt-approvals-key-v1";
 const LD="xt-discarded-v1";
+const LSDONE="xt-sentdone-v1";  // keys confirmed "Sent" on this device: {key:{t,opt}}
 const LSENT="xt-sent-v1";   // keys whose Post link was tapped on this device (local hint only)
 const REPO="MoRohn/x-tracker", OWNER="morohn";
 const $=id=>document.getElementById(id);
@@ -129,7 +133,7 @@ const opts=d=>(Array.isArray(d.options)&&d.options.length)?d.options:[{text:d.te
 const optIdx=d=>{const n=opts(d).length;return Math.min(OPT[d.key]||0,n-1);};
 const curText=d=>opts(d)[optIdx(d)].text||d.text;
 let KEY=null, MEDIA={};   // KEY = AES key in memory only; MEDIA[draftKey] = [{kind,alt,name,mime,url,file}|null]
-let ENV=null, DRAFTS=[], DATA=null, SYNCED=new Set();   // SYNCED = keys with a discard issue by the owner on GitHub
+let ENV=null, DRAFTS=[], DATA=null, SYNCED=new Set(), SYNCED_SENT=new Map();  // SYNCED_SENT: key -> 0-based option from `sent:` issues   // SYNCED = keys with a discard issue by the owner on GitHub
 
 // ---------- toast (one at a time; a token prevents stale timers from hiding a newer toast) ----------
 let toastTok=0;
@@ -185,9 +189,14 @@ function intent(d){
 }
 function issueUrl(key){const q=new URLSearchParams({title:`discard: ${key}`,body:`Discard request for queue key ${key}, sent from the approvals page.\n\nKey only; no draft text. The box closes this issue after marking the draft discarded.`});return `https://github.com/${REPO}/issues/new?${q}`;}
 const open_=d=>d.status==="drafted"||d.status==="approved";
+const getDone=()=>{const o=store.get(LSDONE,{});return o&&typeof o==="object"&&!Array.isArray(o)?o:{};};
+const setDone=o=>store.set(LSDONE,o);
+const isSentDone=d=>open_(d)&&!SYNCED.has(d.key)&&(SYNCED_SENT.has(d.key)||!!getDone()[d.key]);
+const UNDO_MS=30000;
+function sentIssueUrl(key,n){const q=new URLSearchParams({title:`sent: ${key} opt${n}`,body:`Sent from the approvals page: queue key ${key}, option ${n}.\n\nKey and option only; no draft text. The box marks the draft sent and closes this issue; the nightly X read confirms the post.`});return `https://github.com/${REPO}/issues/new?${q}`;}
 const isSynced=d=>open_(d)&&SYNCED.has(d.key);
 const isLocalDiscard=d=>open_(d)&&!SYNCED.has(d.key)&&getLD().includes(d.key);
-const isPending=d=>open_(d)&&!SYNCED.has(d.key)&&!getLD().includes(d.key);
+const isPending=d=>open_(d)&&!SYNCED.has(d.key)&&!getLD().includes(d.key)&&!isSentDone(d);
 const STATUS={drafted:["Drafted · needs your OK",""],approved:["Approved · awaiting your tap","ok"],posted:["Posted","ok"],discarded:["Discarded",""]};
 
 const nf=n=>n==null?"—":n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M":n>=1e4?Math.round(n/1e3)+"K":n>=1e3?(n/1e3).toFixed(1).replace(/\.0$/,"")+"K":String(n);
@@ -216,7 +225,12 @@ function card(d,i){
   const mk=(d.media&&d.media.length)?(d.media.length===1?d.media[0].kind:(d.media.every(m=>m.kind==="image")?"images":"media")):"";
   const p=d.parent&&!d.parent.missing&&!d.parent.unavailable?d.parent:null;
   const pms=p?pTime(p):(d.parent_id?tsFromId(d.parent_id):null);
-  const st=isSynced(d)?["Discarded · synced to Grok Bot","ok"]:isLocalDiscard(d)?["Discarded (this device) · not synced yet","warn"]:(STATUS[d.status]||[d.status,""]);
+  const dn=getDone()[d.key];
+  const sentN=d.status==="sent_unconfirmed"?(d.chosen_option||0)+1:isSentDone(d)?(SYNCED_SENT.has(d.key)?SYNCED_SENT.get(d.key):dn.opt||0)+1:0;
+  const st=isSynced(d)?["Discarded · synced to Grok Bot","ok"]:isLocalDiscard(d)?["Discarded (this device) · not synced yet","warn"]
+    :d.status==="sent_unconfirmed"?[`Sent (option ${sentN}) · awaiting X confirm`,"ok"]
+    :isSentDone(d)?(SYNCED_SENT.has(d.key)?[`Sent (option ${sentN}) · synced`,"ok"]:[`Sent (option ${sentN}) · this device`,"ok"])
+    :(STATUS[d.status]||[d.status,""]);
   const me=(DATA&&DATA.me)||{name:"Rohn Springfield",username:"RohnSpringfield"};
   const head=`<div class="meta"><span class="pill type">${esc(d.type)}</span><b>${esc(d.key)}</b><span>· ${esc(slotET(d.slot))}</span>
       <span class="pill ${st[1]}">${esc(st[0])}</span>${d.pillar?`<span class="pill">${esc(d.pillar)}</span>`:""}${d.type==="reply"&&pms&&isPending(d)?windowBadge(pms):""}</div>`;
@@ -238,7 +252,8 @@ function card(d,i){
   return `<div class="card" data-key="${esc(d.key)}">${head}${thread}
     ${d.fact_check?`<div class="fc"><b>${d.type==="post"?"Source / fact check":"Fact check"}:</b> ${esc(d.fact_check)}</div>`:""}
     ${d.status==="posted"&&d.post_id?`<div class="fc"><a style="color:inherit" href="https://x.com/RohnSpringfield/status/${esc(d.post_id)}" target="_blank" rel="noopener">View your live post ↗</a></div>`:""}
-    ${isPending(d)&&sentAt?`<div class="sent"><b>Sent?</b><span class="m">${os.length>1?`Option ${(si.opt||0)+1} · `:""}Opened in X ${esc(ageStr(sentAt))}. Confirmed after the nightly X read.</span><button type="button" data-act="unsent" data-i="${i}">Undo</button></div>`:""}
+    ${isPending(d)&&sentAt?`<div class="sentrow"><div class="m">${os.length>1?`Option ${(si.opt||0)+1} · `:""}Opened in X ${esc(ageStr(sentAt))}. Did it post?</div><div class="actions"><a class="btn primary sentbtn" data-sentdone="${i}" href="${esc(sentIssueUrl(d.key,(si.opt||0)+1))}" target="_blank" rel="noopener noreferrer">Sent</a><button type="button" data-act="unsent" data-i="${i}">Not sent</button></div></div>`:""}
+    ${isSentDone(d)&&dn&&Date.now()-dn.t<UNDO_MS?`<div class="undo"><button type="button" data-act="undosent" data-i="${i}">Undo</button></div>`:""}
     ${isPending(d)&&!sentAt?`<div class="actions${(os.length>1)+(!!mk)?" many":""}"><a class="btn primary post" data-post="${i}" href="${esc(intent(d))}" target="_blank" rel="noopener">Post</a>${os.length>1?`<button type="button" data-act="next" data-i="${i}">Next Option</button>`:""}${mk?`<button type="button" data-act="save" data-i="${i}">Save ${mk}</button>`:""}<button type="button" data-act="copy" data-i="${i}">Copy</button><button type="button" class="discard" data-act="discard" data-i="${i}">Discard</button></div>${mk?`<div class="hint">Attach the saved ${mk} in X before posting.</div>`:""}`:""}
     ${isLocalDiscard(d)?`<div class="actions"><a class="btn primary" href="${esc(issueUrl(d.key))}" target="_blank" rel="noopener noreferrer">Sync to Grok Bot</a><button type="button" data-act="restore" data-i="${i}">Restore</button></div>`:""}
   </div>`;
@@ -248,6 +263,8 @@ function render(){
   if(!DATA) return;
   // drop sent hints for drafts that are no longer open (posted/discarded via the nightly read)
   const so=getSent(),keep={};DRAFTS.forEach(d=>{if(so[d.key]&&open_(d))keep[d.key]=so[d.key];});if(Object.keys(keep).length!==Object.keys(so).length)setSent(keep);
+  // local "Sent" flags: drop once the queue row has moved on (sent_unconfirmed/posted/discarded)
+  const sd=getDone(),kd={};DRAFTS.forEach(d=>{if(sd[d.key]&&open_(d))kd[d.key]=sd[d.key];});if(Object.keys(kd).length!==Object.keys(sd).length)setDone(kd);
   const nP=DRAFTS.filter(isPending).length,nS=DRAFTS.filter(d=>isPending(d)&&keep[d.key]).length;
   $("sub").textContent=`Updated ${DATA.built_et} · ${nP-nS} pending`+(nS?` · ${nS} sent?`:"");
   const pend=DRAFTS.map((d,i)=>[d,i]).filter(([d])=>isPending(d));
@@ -256,7 +273,9 @@ function render(){
   $("pending").innerHTML=order.length?order.map(g=>`<h2>${esc(g)}</h2>`+groups[g].map(([d,i])=>card(d,i)).join("")).join(""):`<div class="card">Nothing pending. New drafts appear here after each batch.</div>`;
   const hist=DRAFTS.map((d,i)=>[d,i]).filter(([d])=>!isPending(d));
   // unsynced local discards first so the Sync link is easy to find
-  hist.sort((a,b)=>(isLocalDiscard(b[0])?1:0)-(isLocalDiscard(a[0])?1:0));
+  const recent=d=>{const x=getDone()[d.key];return isSentDone(d)&&x&&Date.now()-x.t<UNDO_MS;};
+  hist.sort((a,b)=>((recent(b[0])?2:0)+(isLocalDiscard(b[0])?1:0))-((recent(a[0])?2:0)+(isLocalDiscard(a[0])?1:0)));
+  if(hist.some(([d])=>recent(d))) $("histWrap").open=true;
   $("histSum").textContent=`History (${hist.length})`+(hist.some(([d])=>isLocalDiscard(d))?" · needs sync":"");
   $("history").innerHTML=hist.map(([d,i])=>card(d,i)).join("");
   $("histWrap").classList.toggle("hidden",!hist.length);
@@ -328,12 +347,25 @@ function nextOpt(i){const d=DRAFTS[i]; if(!d) return; const n=opts(d).length; if
   OPT[d.key]=(optIdx(d)+1)%n;
   const el=[...document.querySelectorAll("#pending .card")].find(c=>c.dataset.key===d.key);
   if(el){el.outerHTML=card(d,i);updateLive();}else render();}
+// Sent: a plain link to the prefilled `sent: KEY optN` issue (no window.open). On the tap: hide the card at once
+// (slide out), move it to History as "Sent (option N)" with a 30s Undo.
+$("app").addEventListener("click",e=>{
+  const a=e.target.closest("a[data-sentdone]"); if(!a) return;
+  const i=+a.dataset.sentdone, d=DRAFTS[i]; if(!d) return;
+  const si=sentInfo(d.key)||{opt:optIdx(d)};
+  const o=getDone(); o[d.key]={t:Date.now(),opt:si.opt||0}; setDone(o);
+  const el=a.closest(".card"); if(el) el.classList.add("out");
+  setTimeout(render,340); setTimeout(render,UNDO_MS+500);
+  toast(`${d.key} moved to History as sent.`);
+});
+function undoSent(i){const d=DRAFTS[i]; if(!d) return; const o=getDone(); delete o[d.key]; setDone(o); render();
+  toast(SYNCED_SENT.has(d.key)?`${d.key} restored here. Close its "sent:" issue on GitHub as not planned.`:`${d.key} back to pending.`,{ms:4000});}
 function unsent(i){const d=DRAFTS[i]; if(!d) return; const o=getSent(); delete o[d.key]; setSent(o); render(); toast(`${d.key} back to pending.`);}
 // One delegated listener survives every re-render.
 $("app").addEventListener("click",e=>{
   const b=e.target.closest("[data-act]"); if(!b) return;
   e.preventDefault(); const i=+b.dataset.i;
-  if(b.dataset.act==="discard")discard(i); else if(b.dataset.act==="restore")restore(i); else if(b.dataset.act==="copy")copy(i); else if(b.dataset.act==="unsent")unsent(i); else if(b.dataset.act==="save")saveMedia(i); else if(b.dataset.act==="next")nextOpt(i);
+  if(b.dataset.act==="discard")discard(i); else if(b.dataset.act==="restore")restore(i); else if(b.dataset.act==="copy")copy(i); else if(b.dataset.act==="unsent")unsent(i); else if(b.dataset.act==="save")saveMedia(i); else if(b.dataset.act==="next")nextOpt(i); else if(b.dataset.act==="undosent")undoSent(i);
 });
 
 // Cross-device: read public discard issues (title + author only) from the GitHub API.
@@ -341,13 +373,18 @@ async function refreshSynced(){
   try{
     const r=await fetch(`https://api.github.com/repos/${REPO}/issues?state=all&per_page=100&sort=created&direction=desc`,{cache:"no-store",headers:{Accept:"application/vnd.github+json"}});
     if(!r.ok) return;
-    const s=new Set();
+    const s=new Set(), ss=new Map();
     for(const it of await r.json()){
       if(it.pull_request) continue;
+      if((it.user?.login||"").toLowerCase()!==OWNER) continue;
       const m=/^\s*discard:\s*([A-Za-z0-9_.\-]+)\s*$/i.exec(it.title||"");
-      if(m&&(it.user?.login||"").toLowerCase()===OWNER) s.add(m[1]);
+      if(m) s.add(m[1]);
+      // sent: honored while open, or once closed as completed (the box closes it after marking the row); "not planned" = undone
+      const n=/^\s*sent:\s*([A-Za-z0-9_.\-]+)(?:\s+opt([1-9]))?\s*$/i.exec(it.title||"");
+      if(n&&(it.state==="open"||it.state_reason==="completed")&&!ss.has(n[1])) ss.set(n[1],(+(n[2]||1))-1);
     }
-    SYNCED=s;
+    SYNCED=s; SYNCED_SENT=ss;
+    { const o=getDone(); let ch=false; for(const k of Object.keys(o)) if(ss.has(k)&&Date.now()-o[k].t>=UNDO_MS){delete o[k];ch=true;} if(ch) setDone(o); }
     // a synced key no longer needs the local flag
     setLD(getLD().filter(k=>!s.has(k)));
     render();
