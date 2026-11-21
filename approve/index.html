@@ -43,7 +43,8 @@ h2{font-size:13px;margin:16px 2px 8px;color:var(--tx2);font-weight:650;text-tran
 .fc{font-size:12.5px;color:var(--tx2);border-left:3px solid var(--line);padding:2px 0 2px 10px;margin:8px 0}
 .warnbox{font-size:12.5px;color:var(--warn);margin:6px 0}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.actions .post{flex:2 1 0;padding:13px 16px;font-size:16px;font-weight:750}.actions [data-act]{flex:1 1 0;padding:13px 10px}
+.actions .post{flex:2 1 0;padding:13px 16px;font-size:16px;font-weight:750}.actions.many .post{flex:1 1 100%}
+.opt{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--tx2);margin-top:4px}.opt b{color:var(--tx);font-weight:700}.opt .ang{background:var(--line);border-radius:999px;padding:2px 8px}.actions [data-act]{flex:1 1 0;padding:13px 10px}
 .sent{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(56,189,248,.10);color:var(--tx);font-size:13px}.sent b{font-weight:700}.sent .m{color:var(--mu,#94a3b8);flex:1}.sent button{padding:6px 12px;font-size:12px}
 details>summary{cursor:pointer;color:var(--tx2);font-weight:650;font-size:13px;padding:6px 2px}
 .hidden{display:none}
@@ -106,7 +107,7 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const APP_VERSION="approve-v6";
+const APP_VERSION="approve-v7";
 const LS="xt-approvals-key-v1";
 const LD="xt-discarded-v1";
 const LSENT="xt-sent-v1";   // keys whose Post link was tapped on this device (local hint only)
@@ -120,6 +121,13 @@ const getLD=()=>{const a=store.get(LD,[]);return Array.isArray(a)?a:[];};
 const setLD=a=>store.set(LD,[...new Set(a)]);
 const getSent=()=>{const o=store.get(LSENT,{});return o&&typeof o==="object"&&!Array.isArray(o)?o:{};};
 const setSent=o=>store.set(LSENT,o);
+// sent entries: {t: ms, opt: index}; older builds stored a bare timestamp
+const sentInfo=k=>{const v=getSent()[k];return v==null?null:(typeof v==="number"?{t:v,opt:0}:v);};
+// ---------- options: options[0] is the proposed best (== text); Next Option cycles in place ----------
+let OPT={};   // draftKey -> index currently shown (memory only)
+const opts=d=>(Array.isArray(d.options)&&d.options.length)?d.options:[{text:d.text}];
+const optIdx=d=>{const n=opts(d).length;return Math.min(OPT[d.key]||0,n-1);};
+const curText=d=>opts(d)[optIdx(d)].text||d.text;
 let KEY=null, MEDIA={};   // KEY = AES key in memory only; MEDIA[draftKey] = [{kind,alt,name,mime,url,file}|null]
 let ENV=null, DRAFTS=[], DATA=null, SYNCED=new Set();   // SYNCED = keys with a discard issue by the owner on GitHub
 
@@ -170,7 +178,7 @@ const tsFromId=id=>{try{return Number((BigInt(id)>>22n)+1288834974657n);}catch(e
 function slotET(s){if(!s||s==="asap")return "ASAP";const d=new Date(s);return d.toLocaleString("en-US",{timeZone:"America/New_York",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" ET";}
 function ago(ms){const h=(Date.now()-ms)/36e5;return h<1?`${Math.round(h*60)} min`:h<48?`${h.toFixed(1)} h`:`${Math.round(h/24)} d`;}
 function intent(d){
-  const p=new URLSearchParams({text:d.text});
+  const p=new URLSearchParams({text:curText(d)});
   if(d.type==="reply"&&d.parent_id)p.set("in_reply_to",d.parent_id);
   if(d.type==="quote"&&d.parent_id)p.set("url",`https://x.com/${(d.target||"i").replace(/^@/,"")}/status/${d.parent_id}`);
   return "https://x.com/intent/post?"+p.toString();
@@ -204,7 +212,7 @@ function updateLive(){
 setInterval(updateLive,30000);
 
 function card(d,i){
-  const n=xlen(d.text),sentAt=isPending(d)?getSent()[d.key]:null;
+  const os=opts(d),oi=optIdx(d),txt=curText(d),n=xlen(txt),si=isPending(d)?sentInfo(d.key):null,sentAt=si&&si.t;
   const mk=(d.media&&d.media.length)?(d.media.length===1?d.media[0].kind:(d.media.every(m=>m.kind==="image")?"images":"media")):"";
   const p=d.parent&&!d.parent.missing&&!d.parent.unavailable?d.parent:null;
   const pms=p?pTime(p):(d.parent_id?tsFromId(d.parent_id):null);
@@ -222,15 +230,16 @@ function card(d,i){
   thread+=`<div class="tw"><div class="rail">${avatar(me)}</div><div class="body" style="padding-bottom:0">
       <div class="draftlbl">Your draft</div>${who({name:me.name,username:me.username,verified:true},null)}
       ${d.type==="reply"&&d.target?`<div class="ctx">Replying to <a href="https://x.com/${esc(d.target.replace(/^@/,""))}" target="_blank" rel="noopener">${esc(d.target)}</a></div>`:""}
-      <div class="text">${esc(d.text)}</div>
+      ${os.length>1?`<div class="opt"><b>Option ${oi+1} of ${os.length}</b>${os[oi].angle?`<span class="ang">${esc(os[oi].angle)}</span>`:""}${oi===0?`<span>· proposed</span>`:""}</div>`:""}
+      <div class="text">${esc(txt)}</div>
       <div class="count ${n>280?"over":""}">${n} / 280${n>280?" · long post (Premium)":""}</div>
       ${mediaPreview(d)}
       ${quoted}</div></div>`;
   return `<div class="card" data-key="${esc(d.key)}">${head}${thread}
     ${d.fact_check?`<div class="fc"><b>${d.type==="post"?"Source / fact check":"Fact check"}:</b> ${esc(d.fact_check)}</div>`:""}
     ${d.status==="posted"&&d.post_id?`<div class="fc"><a style="color:inherit" href="https://x.com/RohnSpringfield/status/${esc(d.post_id)}" target="_blank" rel="noopener">View your live post ↗</a></div>`:""}
-    ${isPending(d)&&sentAt?`<div class="sent"><b>Sent?</b><span class="m">Opened in X ${esc(ageStr(sentAt))}. Confirmed after the nightly X read.</span><button type="button" data-act="unsent" data-i="${i}">Undo</button></div>`:""}
-    ${isPending(d)&&!sentAt?`<div class="actions"><a class="btn primary post" data-post="${i}" href="${esc(intent(d))}" target="_blank" rel="noopener">Post</a>${mk?`<button type="button" data-act="save" data-i="${i}">Save ${mk}</button>`:""}<button type="button" data-act="copy" data-i="${i}">Copy</button><button type="button" class="discard" data-act="discard" data-i="${i}">Discard</button></div>${mk?`<div class="hint">Attach the saved ${mk} in X before posting.</div>`:""}`:""}
+    ${isPending(d)&&sentAt?`<div class="sent"><b>Sent?</b><span class="m">${os.length>1?`Option ${(si.opt||0)+1} · `:""}Opened in X ${esc(ageStr(sentAt))}. Confirmed after the nightly X read.</span><button type="button" data-act="unsent" data-i="${i}">Undo</button></div>`:""}
+    ${isPending(d)&&!sentAt?`<div class="actions${(os.length>1)+(!!mk)?" many":""}"><a class="btn primary post" data-post="${i}" href="${esc(intent(d))}" target="_blank" rel="noopener">Post</a>${os.length>1?`<button type="button" data-act="next" data-i="${i}">Next Option</button>`:""}${mk?`<button type="button" data-act="save" data-i="${i}">Save ${mk}</button>`:""}<button type="button" data-act="copy" data-i="${i}">Copy</button><button type="button" class="discard" data-act="discard" data-i="${i}">Discard</button></div>${mk?`<div class="hint">Attach the saved ${mk} in X before posting.</div>`:""}`:""}
     ${isLocalDiscard(d)?`<div class="actions"><a class="btn primary" href="${esc(issueUrl(d.key))}" target="_blank" rel="noopener noreferrer">Sync to Grok Bot</a><button type="button" data-act="restore" data-i="${i}">Restore</button></div>`:""}
   </div>`;
 }
@@ -304,22 +313,27 @@ function discard(i){
   toast(`Discarded ${d.key}.`,{syncKey:d.key,undo:()=>{setLD(getLD().filter(k=>k!==d.key));render();toast(`Restored ${d.key}.`);},ms:12000});
 }
 function restore(i){const d=DRAFTS[i]; if(!d) return; setLD(getLD().filter(k=>k!==d.key)); render(); toast(`Restored ${d.key}.`);}
-async function copy(i){const t=DRAFTS[i].text;
+async function copy(i){const t=curText(DRAFTS[i]);
   try{await navigator.clipboard.writeText(t);}catch(e){const ta=document.createElement("textarea");ta.value=t;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,t.length);document.execCommand("copy");ta.remove();}
   toast("Copied");}
 // Post: a plain link (default navigation untouched, no window.open). Mark "Sent?" after the tap has navigated.
 $("app").addEventListener("click",e=>{
   const a=e.target.closest("a[data-post]"); if(!a) return;
   const d=DRAFTS[+a.dataset.post]; if(!d) return;
-  const o=getSent(); o[d.key]=Date.now(); setSent(o);
+  const o=getSent(); o[d.key]={t:Date.now(),opt:optIdx(d)}; setSent(o);
   setTimeout(render,400);
 });
+// Next Option: swap just this card (no reload); Post href, count, label and Copy all follow curText().
+function nextOpt(i){const d=DRAFTS[i]; if(!d) return; const n=opts(d).length; if(n<2) return;
+  OPT[d.key]=(optIdx(d)+1)%n;
+  const el=[...document.querySelectorAll("#pending .card")].find(c=>c.dataset.key===d.key);
+  if(el){el.outerHTML=card(d,i);updateLive();}else render();}
 function unsent(i){const d=DRAFTS[i]; if(!d) return; const o=getSent(); delete o[d.key]; setSent(o); render(); toast(`${d.key} back to pending.`);}
 // One delegated listener survives every re-render.
 $("app").addEventListener("click",e=>{
   const b=e.target.closest("[data-act]"); if(!b) return;
   e.preventDefault(); const i=+b.dataset.i;
-  if(b.dataset.act==="discard")discard(i); else if(b.dataset.act==="restore")restore(i); else if(b.dataset.act==="copy")copy(i); else if(b.dataset.act==="unsent")unsent(i); else if(b.dataset.act==="save")saveMedia(i);
+  if(b.dataset.act==="discard")discard(i); else if(b.dataset.act==="restore")restore(i); else if(b.dataset.act==="copy")copy(i); else if(b.dataset.act==="unsent")unsent(i); else if(b.dataset.act==="save")saveMedia(i); else if(b.dataset.act==="next")nextOpt(i);
 });
 
 // Cross-device: read public discard issues (title + author only) from the GitHub API.
