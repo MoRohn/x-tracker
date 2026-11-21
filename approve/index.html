@@ -39,6 +39,8 @@ h2{font-size:13px;margin:16px 2px 8px;color:var(--tx2);font-weight:650;text-tran
 .fc{font-size:12.5px;color:var(--tx2);border-left:3px solid var(--line);padding:2px 0 2px 10px;margin:8px 0}
 .warnbox{font-size:12.5px;color:var(--warn);margin:6px 0}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.actions .post{flex:2 1 0;padding:13px 16px;font-size:16px;font-weight:750}.actions [data-act]{flex:1 1 0;padding:13px 10px}
+.sent{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(56,189,248,.10);color:var(--tx);font-size:13px}.sent b{font-weight:700}.sent .m{color:var(--mu,#94a3b8);flex:1}.sent button{padding:6px 12px;font-size:12px}
 details>summary{cursor:pointer;color:var(--tx2);font-weight:650;font-size:13px;padding:6px 2px}
 .hidden{display:none}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 20px);transform:translateX(-50%);background:var(--line);color:var(--tx);padding:8px 14px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .2s}
@@ -95,14 +97,15 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
   <section id="app" class="hidden">
     <div id="pending"></div>
     <details id="histWrap" class="card"><summary id="histSum">History</summary><div id="history"></div></details>
-    <p class="sub">Buttons open X with the text prefilled. Nothing is sent until you press Post in X. Discard hides a draft right away. Tap “Sync to Grok Bot” to file the key-only GitHub issue; once filed, the draft is hidden on all your devices and dropped from the queue at the next publish.</p>
+    <p class="sub">Post opens X with the text prefilled; nothing is sent until you press Post in X. The card then shows “Sent?” until the nightly X read confirms it (Undo if you did not post). Discard hides a draft right away. Tap “Sync to Grok Bot” to file the key-only GitHub issue; once filed, the draft is hidden on all your devices and dropped from the queue at the next publish.</p>
   </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const APP_VERSION="approve-v4";
+const APP_VERSION="approve-v5";
 const LS="xt-approvals-key-v1";
 const LD="xt-discarded-v1";
+const LSENT="xt-sent-v1";   // keys whose Post link was tapped on this device (local hint only)
 const REPO="MoRohn/x-tracker", OWNER="morohn";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -111,6 +114,8 @@ const b64e=b=>btoa(String.fromCharCode(...new Uint8Array(b)));
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}};
 const getLD=()=>{const a=store.get(LD,[]);return Array.isArray(a)?a:[];};
 const setLD=a=>store.set(LD,[...new Set(a)]);
+const getSent=()=>{const o=store.get(LSENT,{});return o&&typeof o==="object"&&!Array.isArray(o)?o:{};};
+const setSent=o=>store.set(LSENT,o);
 let ENV=null, DRAFTS=[], DATA=null, SYNCED=new Set();   // SYNCED = keys with a discard issue by the owner on GitHub
 
 // ---------- toast (one at a time; a token prevents stale timers from hiding a newer toast) ----------
@@ -194,7 +199,7 @@ function updateLive(){
 setInterval(updateLive,30000);
 
 function card(d,i){
-  const n=xlen(d.text),verb=d.type==="reply"?"Reply on X":d.type==="quote"?"Quote on X":"Post on X";
+  const n=xlen(d.text),sentAt=isPending(d)?getSent()[d.key]:null;
   const p=d.parent&&!d.parent.missing&&!d.parent.unavailable?d.parent:null;
   const pms=p?pTime(p):(d.parent_id?tsFromId(d.parent_id):null);
   const st=isSynced(d)?["Discarded · synced to Grok Bot","ok"]:isLocalDiscard(d)?["Discarded (this device) · not synced yet","warn"]:(STATUS[d.status]||[d.status,""]);
@@ -217,15 +222,18 @@ function card(d,i){
   return `<div class="card" data-key="${esc(d.key)}">${head}${thread}
     ${d.fact_check?`<div class="fc"><b>${d.type==="post"?"Source / fact check":"Fact check"}:</b> ${esc(d.fact_check)}</div>`:""}
     ${d.status==="posted"&&d.post_id?`<div class="fc"><a style="color:inherit" href="https://x.com/RohnSpringfield/status/${esc(d.post_id)}" target="_blank" rel="noopener">View your live post ↗</a></div>`:""}
-    ${isPending(d)?`<div class="actions"><a class="btn primary" href="${esc(intent(d))}" target="_blank" rel="noopener">${verb}</a><button type="button" data-act="copy" data-i="${i}">Copy text</button><button type="button" class="discard" data-act="discard" data-i="${i}">Discard</button></div>`:""}
+    ${isPending(d)&&sentAt?`<div class="sent"><b>Sent?</b><span class="m">Opened in X ${esc(ageStr(sentAt))}. Confirmed after the nightly X read.</span><button type="button" data-act="unsent" data-i="${i}">Undo</button></div>`:""}
+    ${isPending(d)&&!sentAt?`<div class="actions"><a class="btn primary post" data-post="${i}" href="${esc(intent(d))}" target="_blank" rel="noopener">Post</a><button type="button" data-act="copy" data-i="${i}">Copy</button><button type="button" class="discard" data-act="discard" data-i="${i}">Discard</button></div>`:""}
     ${isLocalDiscard(d)?`<div class="actions"><a class="btn primary" href="${esc(issueUrl(d.key))}" target="_blank" rel="noopener noreferrer">Sync to Grok Bot</a><button type="button" data-act="restore" data-i="${i}">Restore</button></div>`:""}
   </div>`;
 }
 
 function render(){
   if(!DATA) return;
-  const nP=DRAFTS.filter(isPending).length;
-  $("sub").textContent=`Updated ${DATA.built_et} · ${nP} pending`;
+  // drop sent hints for drafts that are no longer open (posted/discarded via the nightly read)
+  const so=getSent(),keep={};DRAFTS.forEach(d=>{if(so[d.key]&&open_(d))keep[d.key]=so[d.key];});if(Object.keys(keep).length!==Object.keys(so).length)setSent(keep);
+  const nP=DRAFTS.filter(isPending).length,nS=DRAFTS.filter(d=>isPending(d)&&keep[d.key]).length;
+  $("sub").textContent=`Updated ${DATA.built_et} · ${nP-nS} pending`+(nS?` · ${nS} sent?`:"");
   const pend=DRAFTS.map((d,i)=>[d,i]).filter(([d])=>isPending(d));
   const groups={};pend.forEach(([d,i])=>{const g=`${d.batch||"Batch"} · ${d.slot==="asap"?"Replies (ASAP)":slotET(d.slot)}`;(groups[g]=groups[g]||[]).push([d,i]);});
   const order=Object.keys(groups).sort((a,b)=>{const sa=groups[a][0][0].slot,sb=groups[b][0][0].slot;return (sa==="asap"?"":sa).localeCompare(sb==="asap"?"":sb);});
@@ -256,11 +264,19 @@ function restore(i){const d=DRAFTS[i]; if(!d) return; setLD(getLD().filter(k=>k!
 async function copy(i){const t=DRAFTS[i].text;
   try{await navigator.clipboard.writeText(t);}catch(e){const ta=document.createElement("textarea");ta.value=t;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,t.length);document.execCommand("copy");ta.remove();}
   toast("Copied");}
+// Post: a plain link (default navigation untouched, no window.open). Mark "Sent?" after the tap has navigated.
+$("app").addEventListener("click",e=>{
+  const a=e.target.closest("a[data-post]"); if(!a) return;
+  const d=DRAFTS[+a.dataset.post]; if(!d) return;
+  const o=getSent(); o[d.key]=Date.now(); setSent(o);
+  setTimeout(render,400);
+});
+function unsent(i){const d=DRAFTS[i]; if(!d) return; const o=getSent(); delete o[d.key]; setSent(o); render(); toast(`${d.key} back to pending.`);}
 // One delegated listener survives every re-render.
 $("app").addEventListener("click",e=>{
   const b=e.target.closest("[data-act]"); if(!b) return;
   e.preventDefault(); const i=+b.dataset.i;
-  if(b.dataset.act==="discard")discard(i); else if(b.dataset.act==="restore")restore(i); else if(b.dataset.act==="copy")copy(i);
+  if(b.dataset.act==="discard")discard(i); else if(b.dataset.act==="restore")restore(i); else if(b.dataset.act==="copy")copy(i); else if(b.dataset.act==="unsent")unsent(i);
 });
 
 // Cross-device: read public discard issues (title + author only) from the GitHub API.
