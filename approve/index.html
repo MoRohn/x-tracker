@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-version="approve-v9">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -105,12 +105,12 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
   <section id="app" class="hidden">
     <div id="pending"></div>
     <details id="histWrap" class="card"><summary id="histSum">History</summary><div id="history"></div></details>
-    <p class="sub">Post opens X with the text prefilled; nothing is sent until you press Post in X. The card then shows “Sent?” until the nightly X read confirms it (Undo if you did not post). Discard hides a draft right away. Tap “Sync to Grok Bot” to file the key-only GitHub issue; once filed, the draft is hidden on all your devices and dropped from the queue at the next publish.</p>
+    <p class="sub">Post opens X with the text prefilled; nothing is sent until you press Post in X. After you post, tap Sent — the card moves to History on this device (30s Undo). Tonight’s check against your real posts on X marks it posted on every device. Discard hides a draft right away. Tap “Sync to Grok Bot” to file the key-only GitHub issue; once filed, the draft is hidden on all your devices and dropped from the queue at the next publish.</p>
   </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const APP_VERSION="approve-v8";
+const APP_VERSION="approve-v9";
 const LS="xt-approvals-key-v1";
 const LD="xt-discarded-v1";
 const LSDONE="xt-sentdone-v1";  // keys confirmed "Sent" on this device: {key:{t,opt}}
@@ -193,7 +193,6 @@ const getDone=()=>{const o=store.get(LSDONE,{});return o&&typeof o==="object"&&!
 const setDone=o=>store.set(LSDONE,o);
 const isSentDone=d=>open_(d)&&!SYNCED.has(d.key)&&(SYNCED_SENT.has(d.key)||!!getDone()[d.key]);
 const UNDO_MS=30000;
-function sentIssueUrl(key,n){const q=new URLSearchParams({title:`sent: ${key} opt${n}`,body:`Sent from the approvals page: queue key ${key}, option ${n}.\n\nKey and option only; no draft text. The box marks the draft sent and closes this issue; the nightly X read confirms the post.`});return `https://github.com/${REPO}/issues/new?${q}`;}
 const isSynced=d=>open_(d)&&SYNCED.has(d.key);
 const isLocalDiscard=d=>open_(d)&&!SYNCED.has(d.key)&&getLD().includes(d.key);
 const isPending=d=>open_(d)&&!SYNCED.has(d.key)&&!getLD().includes(d.key)&&!isSentDone(d);
@@ -252,7 +251,7 @@ function card(d,i){
   return `<div class="card" data-key="${esc(d.key)}">${head}${thread}
     ${d.fact_check?`<div class="fc"><b>${d.type==="post"?"Source / fact check":"Fact check"}:</b> ${esc(d.fact_check)}</div>`:""}
     ${d.status==="posted"&&d.post_id?`<div class="fc"><a style="color:inherit" href="https://x.com/RohnSpringfield/status/${esc(d.post_id)}" target="_blank" rel="noopener">View your live post ↗</a></div>`:""}
-    ${isPending(d)&&sentAt?`<div class="sentrow"><div class="m">${os.length>1?`Option ${(si.opt||0)+1} · `:""}Opened in X ${esc(ageStr(sentAt))}. Did it post?</div><div class="actions"><a class="btn primary sentbtn" data-sentdone="${i}" href="${esc(sentIssueUrl(d.key,(si.opt||0)+1))}" target="_blank" rel="noopener noreferrer">Sent</a><button type="button" data-act="unsent" data-i="${i}">Not sent</button></div></div>`:""}
+    ${isPending(d)&&sentAt?`<div class="sentrow"><div class="m">${os.length>1?`Option ${(si.opt||0)+1} · `:""}Opened in X ${esc(ageStr(sentAt))}. Did it post?</div><div class="actions"><button type="button" class="btn primary sentbtn" data-act="sentdone" data-i="${i}">Sent</button><button type="button" data-act="unsent" data-i="${i}">Not sent</button></div></div>`:""}
     ${isSentDone(d)&&dn&&Date.now()-dn.t<UNDO_MS?`<div class="undo"><button type="button" data-act="undosent" data-i="${i}">Undo</button></div>`:""}
     ${isPending(d)&&!sentAt?`<div class="actions${(os.length>1)+(!!mk)?" many":""}"><a class="btn primary post" data-post="${i}" href="${esc(intent(d))}" target="_blank" rel="noopener">Post</a>${os.length>1?`<button type="button" data-act="next" data-i="${i}">Next Option</button>`:""}${mk?`<button type="button" data-act="save" data-i="${i}">Save ${mk}</button>`:""}<button type="button" data-act="copy" data-i="${i}">Copy</button><button type="button" class="discard" data-act="discard" data-i="${i}">Discard</button></div>${mk?`<div class="hint">Attach the saved ${mk} in X before posting.</div>`:""}`:""}
     ${isLocalDiscard(d)?`<div class="actions"><a class="btn primary" href="${esc(issueUrl(d.key))}" target="_blank" rel="noopener noreferrer">Sync to Grok Bot</a><button type="button" data-act="restore" data-i="${i}">Restore</button></div>`:""}
@@ -347,17 +346,17 @@ function nextOpt(i){const d=DRAFTS[i]; if(!d) return; const n=opts(d).length; if
   OPT[d.key]=(optIdx(d)+1)%n;
   const el=[...document.querySelectorAll("#pending .card")].find(c=>c.dataset.key===d.key);
   if(el){el.outerHTML=card(d,i);updateLive();}else render();}
-// Sent: a plain link to the prefilled `sent: KEY optN` issue (no window.open). On the tap: hide the card at once
-// (slide out), move it to History as "Sent (option N)" with a 30s Undo.
-$("app").addEventListener("click",e=>{
-  const a=e.target.closest("a[data-sentdone]"); if(!a) return;
-  const i=+a.dataset.sentdone, d=DRAFTS[i]; if(!d) return;
+// Sent: a single tap, no navigation. Hide the card at once (slide out), move it to History
+// as "Sent (option N)" with a 30s Undo, and persist in localStorage on this device.
+// The nightly X read is the cross-device source of truth.
+function markSent(i,el){
+  const d=DRAFTS[i]; if(!d) return;
   const si=sentInfo(d.key)||{opt:optIdx(d)};
   const o=getDone(); o[d.key]={t:Date.now(),opt:si.opt||0}; setDone(o);
-  const el=a.closest(".card"); if(el) el.classList.add("out");
+  if(el) el.classList.add("out");
   setTimeout(render,340); setTimeout(render,UNDO_MS+500);
   toast(`${d.key} moved to History as sent.`);
-});
+}
 function undoSent(i){const d=DRAFTS[i]; if(!d) return; const o=getDone(); delete o[d.key]; setDone(o); render();
   toast(SYNCED_SENT.has(d.key)?`${d.key} restored here. Close its "sent:" issue on GitHub as not planned.`:`${d.key} back to pending.`,{ms:4000});}
 function unsent(i){const d=DRAFTS[i]; if(!d) return; const o=getSent(); delete o[d.key]; setSent(o); render(); toast(`${d.key} back to pending.`);}
@@ -365,7 +364,7 @@ function unsent(i){const d=DRAFTS[i]; if(!d) return; const o=getSent(); delete o
 $("app").addEventListener("click",e=>{
   const b=e.target.closest("[data-act]"); if(!b) return;
   e.preventDefault(); const i=+b.dataset.i;
-  if(b.dataset.act==="discard")discard(i); else if(b.dataset.act==="restore")restore(i); else if(b.dataset.act==="copy")copy(i); else if(b.dataset.act==="unsent")unsent(i); else if(b.dataset.act==="save")saveMedia(i); else if(b.dataset.act==="next")nextOpt(i); else if(b.dataset.act==="undosent")undoSent(i);
+  if(b.dataset.act==="discard")discard(i); else if(b.dataset.act==="restore")restore(i); else if(b.dataset.act==="copy")copy(i); else if(b.dataset.act==="unsent")unsent(i); else if(b.dataset.act==="save")saveMedia(i); else if(b.dataset.act==="next")nextOpt(i); else if(b.dataset.act==="undosent")undoSent(i); else if(b.dataset.act==="sentdone")markSent(i,b.closest(".card"));
 });
 
 // Cross-device: read public discard issues (title + author only) from the GitHub API.
