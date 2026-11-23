@@ -1,10 +1,11 @@
 <!doctype html>
-<html lang="en" data-version="approve-v10">
+<html lang="en" data-version="approve-v11">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Post Approvals · @RohnSpringfield</title>
 <meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://pbs.twimg.com https://abs.twimg.com https://ton.twimg.com https://video.twimg.com; media-src 'self' blob:; connect-src 'self' https://api.github.com; font-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests">
 <meta name="theme-color" content="#0b1220">
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
@@ -82,9 +83,23 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
 .win{display:inline-block;border-radius:99px;padding:2px 9px;font-size:11px;font-weight:700}
 .win.ok{background:rgba(54,192,138,.16);color:var(--ok)}.win.late{background:rgba(245,180,0,.16);color:var(--warn)}
 .draftlbl{font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
-#syncAll,#lock{padding:7px 12px;font-size:12.5px}
-#syncAll{background:var(--c0);color:#fff;text-decoration:none}
-#syncAll:hover{filter:brightness(1.08)}
+#lock,#syncAll{height:32px;padding:0 11px;font-size:12.5px;font-weight:650;border:1px solid var(--line);background:var(--card);color:var(--tx);border-radius:10px;gap:6px;line-height:1}
+#syncAll{position:relative}
+#syncAll:hover{background:var(--line)}
+#syncAll .ic{display:inline-flex;width:14px;height:14px}
+#syncAll svg{width:14px;height:14px;display:block}
+#syncAll .badge{min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--c0);color:#fff;font-size:10px;font-weight:750;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+#syncAll.syncing{cursor:default}
+#syncAll.ok{border-color:rgba(54,192,138,.45);color:var(--ok)}
+#syncAll.failed{border-color:rgba(245,180,0,.5);color:var(--warn)}
+#syncAll .spin{animation:xtspin .7s linear infinite;transform-origin:center}
+@keyframes xtspin{to{transform:rotate(360deg)}}
+#syncAll .ic-sync,#syncAll .ic-spin,#syncAll .ic-ok{display:none}
+#syncAll .ic-sync{display:inline-flex}
+#syncAll.syncing .ic-sync,#syncAll.ok .ic-sync,#syncAll.failed .ic-sync{display:none}
+#syncAll.syncing .ic-spin{display:inline-flex}
+#syncAll.ok .ic-ok{display:inline-flex}
+#syncAll.failed .badge{background:var(--warn);color:#1a1400}
 </style>
 </head>
 <body>
@@ -93,8 +108,14 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
     <div><h1>Post Approvals 🔒</h1><div class="sub" id="sub">Private · encrypted in your browser</div></div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <nav class="tabs"><a href="../">Dashboard</a><a href="./" class="on">Approvals 🔒</a></nav>
-      <a id="syncAll" class="hidden" target="_blank" rel="noopener noreferrer" title="File one GitHub issue for every unsynced History item">Sync</a>
-      <button id="lock" class="hidden" title="Forget the key on this device">Lock</button>
+      <button type="button" id="syncAll" class="hidden" title="Sync pending discards and sent items" aria-label="Sync">
+        <span class="ic ic-sync" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13.2 8a5.2 5.2 0 0 1-8.8 3.4"/><path d="M2.8 8a5.2 5.2 0 0 1 8.8-3.4"/><path d="M13.2 8V4.6H9.9"/><path d="M2.8 8v3.4h3.3"/></svg></span>
+        <span class="ic ic-spin" aria-hidden="true"><svg class="spin" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="5.5" stroke-dasharray="22 12"/></svg></span>
+        <span class="ic ic-ok" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8.5 3.5 3.5 6.5-8"/></svg></span>
+        <span class="lbl">Sync</span>
+        <span class="badge hidden" id="syncBadge"></span>
+      </button>
+      <button type="button" id="lock" class="hidden" title="Forget the key on this device">Lock</button>
     </div>
   </header>
 
@@ -109,17 +130,20 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
   <section id="app" class="hidden">
     <div id="pending"></div>
     <details id="histWrap" class="card"><summary id="histSum">History</summary><div id="history"></div></details>
-    <p class="sub">Post opens X with the text prefilled; nothing is sent until you press Post in X. After you post, tap Sent — the card moves to History on this device (30s Undo). Tonight’s check against your real posts on X marks it posted on every device. Discard hides a draft right away. Unsynced discards (and local Sent taps) sit in History; tap Sync in the top bar to file one key-only GitHub issue for all of them, then Create once. Once submitted, they show as synced on the next refresh and drop from the queue at the next publish. Restore a discard before you Sync if you still want it.</p>
+    <p class="sub">Post opens X with the text prefilled; nothing is sent until you press Post in X. After you post, tap Sent — the card moves to History (30s Undo) and syncs in the background. Discard hides a draft right away and also syncs in the background. Tonight’s check against your real posts on X confirms Sent items as posted on every device. If a sync can’t reach the server, a Sync button appears so you can retry.</p>
   </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const APP_VERSION="approve-v10";
+const APP_VERSION="approve-v11";
 const LS="xt-approvals-key-v1";
 const LD="xt-discarded-v1";
 const LSDONE="xt-sentdone-v1";  // keys confirmed "Sent" on this device: {key:{t,opt}}
 const LSENT="xt-sent-v1";   // keys whose Post link was tapped on this device (local hint only)
+const LSQ="xt-syncq-v11";   // v11+ actions waiting to be filed: [{key,kind,opt,t}]
+const LSMIG="xt-migrated-v11";
 const REPO="MoRohn/x-tracker", OWNER="morohn";
+const API=`https://api.github.com/repos/${REPO}`;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -137,13 +161,13 @@ const opts=d=>(Array.isArray(d.options)&&d.options.length)?d.options:[{text:d.te
 const optIdx=d=>{const n=opts(d).length;return Math.min(OPT[d.key]||0,n-1);};
 const curText=d=>opts(d)[optIdx(d)].text||d.text;
 let KEY=null, MEDIA={};   // KEY = AES key in memory only; MEDIA[draftKey] = [{kind,alt,name,mime,url,file}|null]
-let ENV=null, DRAFTS=[], DATA=null, SYNCED=new Set(), SYNCED_SENT=new Map();  // SYNCED_SENT: key -> 0-based option from `sent:` issues   // SYNCED = keys with a discard issue by the owner on GitHub
+let ENV=null, DRAFTS=[], DATA=null, SYNC_TOKEN=null, SYNCED=new Set(), SYNCED_SENT=new Map();
 
 // ---------- toast (one at a time; a token prevents stale timers from hiding a newer toast) ----------
 let toastTok=0;
-function toast(msg,{undo,syncKey,ms}={}){
+function toast(msg,{undo,ms}={}){
   const t=$("toast"),tok=++toastTok;
-  t.innerHTML=`<span>${esc(msg)}</span>`+(syncKey?`<a class="sync" href="${esc(issueUrl(syncKey))}" target="_blank" rel="noopener noreferrer">Sync to Grok Bot</a>`:"")+(undo?`<button type="button" data-toast-undo>Undo</button>`:"");
+  t.innerHTML=`<span>${esc(msg)}</span>`+(undo?`<button type="button" data-toast-undo>Undo</button>`:"");
   if(undo)t.querySelector("[data-toast-undo]").onclick=()=>{toastTok++;t.classList.remove("on");undo();};
   t.classList.add("on");
   setTimeout(()=>{if(tok===toastTok)t.classList.remove("on");},ms||1800);
@@ -191,7 +215,6 @@ function intent(d){
   if(d.type==="quote"&&d.parent_id)p.set("url",`https://x.com/${(d.target||"i").replace(/^@/,"")}/status/${d.parent_id}`);
   return "https://x.com/intent/post?"+p.toString();
 }
-function issueUrl(key){const q=new URLSearchParams({title:`discard: ${key}`,body:`Discard request for queue key ${key}, sent from the approvals page.\n\nKey only; no draft text. The box closes this issue after marking the draft discarded.`});return `https://github.com/${REPO}/issues/new?${q}`;}
 // Parses GitHub issue titles/bodies from the approvals page (mirrors sync_parse.py). Keys only; no draft text.
 const KEY_OK=/^[A-Za-z][A-Za-z0-9_.\-]*$/, KEY_RESERVED=new Set(["items","item","sync","discard","sent","keys","key"]);
 const isKeyTok=t=>KEY_OK.test(t)&&!KEY_RESERVED.has(String(t).toLowerCase())&&!/^opt[1-9]$/i.test(t);
@@ -230,23 +253,108 @@ function unsyncedItems(){
   }
   return {discards,sents};
 }
-function syncAllUrl(u){
-  u=u||unsyncedItems();
-  const {discards,sents}=u, n=discards.length+sents.length;
-  if(!n) return "";
+// v11+ sync queue: only taps made after the v11 migration are filed. Keys only; no draft text.
+const getQ=()=>{const a=store.get(LSQ,[]);return Array.isArray(a)?a.filter(x=>x&&x.key&&(x.kind==="discard"||x.kind==="sent")):[];};
+const setQ=a=>store.set(LSQ,a);
+function enqueue(item){setQ(getQ().filter(x=>x.key!==item.key).concat([item]));}
+function dequeue(key){setQ(getQ().filter(x=>x.key!==key));}
+function migratePreV11(){
+  if(store.get(LSMIG,false)) return 0;
+  const ld=getLD(), done=getDone();
+  let n=0;
+  for(const d of DRAFTS){
+    if(!open_(d)) continue;
+    if(ld.includes(d.key)||done[d.key]) n++;
+  }
+  setLD([]);
+  setDone({});
+  setQ([]);
+  store.set(LSMIG,true);
+  return n;
+}
+function buildIssue(items){
+  const discards=[],sents=[];
+  for(const it of items){
+    if(it.kind==="discard"&&!discards.includes(it.key)) discards.push(it.key);
+    else if(it.kind==="sent"&&!sents.some(s=>s.key===it.key)) sents.push({key:it.key,opt:(it.opt||0)+1});
+  }
+  const n=discards.length+sents.length;
   const lines=["Sync request from the approvals page. Keys only; no draft text. The box closes this issue after applying the changes.","",
     ...discards.map(k=>`discard: ${k}`), ...sents.map(s=>`sent: ${s.key} opt${s.opt}`)];
   let title;
   if(!sents.length&&discards.length===1) title=`discard: ${discards[0]}`;
   else if(!sents.length){const t2=`discard: ${discards.join(" ")}`; title=t2.length<=200?t2:`sync: ${n} items`;}
   else title=`sync: ${n} items`;
-  return `https://github.com/${REPO}/issues/new?`+new URLSearchParams({title,body:lines.join("\n")});
+  return {title,body:lines.join("\n"),discards,sents,n};
 }
+let syncState="idle", syncing=false, flushTimer=null, flushAgain=false;
+function setSyncState(s){syncState=s;updateSyncBtn();}
 function updateSyncBtn(){
-  const a=$("syncAll"); if(!a) return;
-  const u=unsyncedItems(), n=u.discards.length+u.sents.length;
-  if(!DATA||!n){a.classList.add("hidden");a.removeAttribute("href");a.textContent="Sync";return;}
-  a.classList.remove("hidden"); a.href=syncAllUrl(u); a.textContent=`Sync (${n})`;
+  const b=$("syncAll"), badge=$("syncBadge"); if(!b) return;
+  const n=getQ().length;
+  const show=!!DATA&&(n>0||syncState==="syncing"||syncState==="ok"||syncState==="failed");
+  b.classList.toggle("hidden",!show);
+  b.classList.toggle("syncing",syncState==="syncing");
+  b.classList.toggle("ok",syncState==="ok");
+  b.classList.toggle("failed",syncState==="failed");
+  b.disabled=syncState==="syncing";
+  const lbl=b.querySelector(".lbl");
+  if(lbl) lbl.textContent=syncState==="syncing"?"Syncing":syncState==="ok"?"Synced":syncState==="failed"?"Retry":"Sync";
+  b.title=syncState==="failed"?"Sync failed, will retry":syncState==="syncing"?"Syncing…":"Sync pending discards and sent items";
+  b.setAttribute("aria-label",b.title);
+  if(badge){badge.textContent=n?String(n):"";badge.classList.toggle("hidden",!n||syncState==="ok");}
+}
+function authHeaders(){
+  const h={Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"};
+  if(SYNC_TOKEN) h.Authorization="Bearer "+SYNC_TOKEN;
+  return h;
+}
+async function postIssues(title,body){
+  if(!SYNC_TOKEN) throw new Error("no token");
+  const r=await fetch(`${API}/issues`,{method:"POST",cache:"no-store",headers:{...authHeaders(),"Content-Type":"application/json"},body:JSON.stringify({title,body})});
+  if(!r.ok) throw new Error("http "+r.status);
+  return r.json();
+}
+function scheduleFlush(){
+  clearTimeout(flushTimer);
+  const q=getQ(); if(!q.length) return;
+  const wait=Math.max(0,Math.min(...q.map(x=>UNDO_MS-(Date.now()-x.t))));
+  flushTimer=setTimeout(()=>flushSync({manual:false}),wait+50);
+}
+async function flushSync({manual=false}={}){
+  if(!DATA) return;
+  if(syncing){flushAgain=true;return;}
+  let items=getQ();
+  if(!manual) items=items.filter(x=>Date.now()-x.t>=UNDO_MS);
+  items=items.filter(x=>{
+    if(x.kind==="discard") return !SYNCED.has(x.key);
+    return !SYNCED_SENT.has(x.key);
+  });
+  if(!items.length){if(syncState==="failed"&&!getQ().length) setSyncState("idle"); else updateSyncBtn(); return;}
+  syncing=true; setSyncState("syncing");
+  try{
+    const payload=buildIssue(items);
+    if(!payload.n) throw new Error("empty");
+    await postIssues(payload.title,payload.body);
+    for(const it of items){
+      if(it.kind==="discard") SYNCED.add(it.key);
+      else SYNCED_SENT.set(it.key,it.opt||0);
+      dequeue(it.key);
+    }
+    setLD(getLD().filter(k=>!SYNCED.has(k)));
+    {const o=getDone(); let ch=false; for(const k of Object.keys(o)) if(SYNCED_SENT.has(k)&&Date.now()-o[k].t>=UNDO_MS){delete o[k];ch=true;} if(ch) setDone(o);}
+    setSyncState("ok");
+    toast(payload.n===1?"Synced 1":`Synced ${payload.n}`);
+    setTimeout(()=>{if(syncState==="ok") setSyncState(getQ().length?"idle":"idle");},1800);
+    render();
+  }catch(e){
+    setSyncState("failed");
+    toast("Sync failed, will retry",{ms:4000});
+  }finally{
+    syncing=false;
+    updateSyncBtn();
+    if(flushAgain){flushAgain=false;scheduleFlush();}
+  }
 }
 const STATUS={drafted:["Drafted · needs your OK",""],approved:["Approved · awaiting your tap","ok"],posted:["Posted","ok"],discarded:["Discarded",""]};
 
@@ -306,7 +414,7 @@ function card(d,i){
     ${isPending(d)&&sentAt?`<div class="sentrow"><div class="m">${os.length>1?`Option ${(si.opt||0)+1} · `:""}Opened in X ${esc(ageStr(sentAt))}. Did it post?</div><div class="actions"><button type="button" class="btn primary sentbtn" data-act="sentdone" data-i="${i}">Sent</button><button type="button" data-act="unsent" data-i="${i}">Not sent</button></div></div>`:""}
     ${isSentDone(d)&&dn&&Date.now()-dn.t<UNDO_MS?`<div class="undo"><button type="button" data-act="undosent" data-i="${i}">Undo</button></div>`:""}
     ${isPending(d)&&!sentAt?`<div class="actions${(os.length>1)+(!!mk)?" many":""}"><a class="btn primary post" data-post="${i}" href="${esc(intent(d))}" target="_blank" rel="noopener">Post</a>${os.length>1?`<button type="button" data-act="next" data-i="${i}">Next Option</button>`:""}${mk?`<button type="button" data-act="save" data-i="${i}">Save ${mk}</button>`:""}<button type="button" data-act="copy" data-i="${i}">Copy</button><button type="button" class="discard" data-act="discard" data-i="${i}">Discard</button></div>${mk?`<div class="hint">Attach the saved ${mk} in X before posting.</div>`:""}`:""}
-    ${isLocalDiscard(d)?`<div class="actions"><a class="btn primary" href="${esc(issueUrl(d.key))}" target="_blank" rel="noopener noreferrer">Sync to Grok Bot</a><button type="button" data-act="restore" data-i="${i}">Restore</button></div>`:""}
+    ${isLocalDiscard(d)?`<div class="actions"><button type="button" data-act="restore" data-i="${i}">Restore</button></div>`:""}
   </div>`;
 }
 
@@ -373,19 +481,26 @@ async function saveMedia(i){
   toast(files.length>1?`Downloading ${files.length} files`:`Downloading ${files[0].name}`);
 }
 function show(data){
+  SYNC_TOKEN=data.sync_token||null;
+  data=Object.assign({},data); delete data.sync_token;
   DATA=data; DRAFTS=data.drafts||[];
   $("gate").classList.add("hidden");$("app").classList.remove("hidden");$("lock").classList.remove("hidden");
-  render(); refreshSynced(); prepMedia();
+  const restored=migratePreV11();
+  render();
+  if(restored) toast(restored===1?"Restored 1 draft hidden on this device":`Restored ${restored} drafts hidden on this device`,{ms:5000});
+  refreshSynced(); prepMedia(); scheduleFlush();
 }
 
-// Discard: everything synchronous on the tap. No window.open (iOS blocks/ignores it in standalone);
-// the GitHub issue is a real link the user taps in the toast or in History.
+// Discard: hide immediately, queue a key-only sync, auto-file after the undo window.
 function discard(i){
   const d=DRAFTS[i]; if(!d) return;
-  setLD([...getLD(),d.key]); render();
-  toast(`Discarded ${d.key}.`,{syncKey:d.key,undo:()=>{setLD(getLD().filter(k=>k!==d.key));render();toast(`Restored ${d.key}.`);},ms:12000});
+  setLD([...getLD(),d.key]);
+  enqueue({key:d.key,kind:"discard",t:Date.now()});
+  render();
+  toast(`Discarded ${d.key}.`,{undo:()=>{dequeue(d.key);setLD(getLD().filter(k=>k!==d.key));render();updateSyncBtn();toast(`Restored ${d.key}.`);},ms:UNDO_MS});
+  scheduleFlush();
 }
-function restore(i){const d=DRAFTS[i]; if(!d) return; setLD(getLD().filter(k=>k!==d.key)); render(); toast(`Restored ${d.key}.`);}
+function restore(i){const d=DRAFTS[i]; if(!d) return; dequeue(d.key); setLD(getLD().filter(k=>k!==d.key)); render(); updateSyncBtn(); toast(`Restored ${d.key}.`);}
 async function copy(i){const t=curText(DRAFTS[i]);
   try{await navigator.clipboard.writeText(t);}catch(e){const ta=document.createElement("textarea");ta.value=t;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,t.length);document.execCommand("copy");ta.remove();}
   toast("Copied");}
@@ -402,18 +517,19 @@ function nextOpt(i){const d=DRAFTS[i]; if(!d) return; const n=opts(d).length; if
   const el=[...document.querySelectorAll("#pending .card")].find(c=>c.dataset.key===d.key);
   if(el){el.outerHTML=card(d,i);updateLive();}else render();}
 // Sent: a single tap, no navigation. Hide the card at once (slide out), move it to History
-// as "Sent (option N)" with a 30s Undo, and persist in localStorage on this device.
-// The nightly X read is the cross-device source of truth.
+// as "Sent (option N)" with a 30s Undo, then auto-sync in the background.
 function markSent(i,el){
   const d=DRAFTS[i]; if(!d) return;
   const si=sentInfo(d.key)||{opt:optIdx(d)};
   const o=getDone(); o[d.key]={t:Date.now(),opt:si.opt||0}; setDone(o);
+  enqueue({key:d.key,kind:"sent",opt:si.opt||0,t:Date.now()});
   if(el) el.classList.add("out");
   setTimeout(render,340); setTimeout(render,UNDO_MS+500);
-  toast(`${d.key} moved to History as sent.`);
+  toast(`${d.key} moved to History as sent.`,{undo:()=>{const o=getDone();delete o[d.key];setDone(o);dequeue(d.key);render();updateSyncBtn();toast(`${d.key} back to pending.`);},ms:UNDO_MS});
+  scheduleFlush();
 }
-function undoSent(i){const d=DRAFTS[i]; if(!d) return; const o=getDone(); delete o[d.key]; setDone(o); render();
-  toast(SYNCED_SENT.has(d.key)?`${d.key} restored here. Close its "sent:" issue on GitHub as not planned.`:`${d.key} back to pending.`,{ms:4000});}
+function undoSent(i){const d=DRAFTS[i]; if(!d) return; const o=getDone(); delete o[d.key]; setDone(o); dequeue(d.key); render(); updateSyncBtn();
+  toast(SYNCED_SENT.has(d.key)?`${d.key} restored here. It may already be marked sent after the next publish.`:`${d.key} back to pending.`,{ms:4000});}
 function unsent(i){const d=DRAFTS[i]; if(!d) return; const o=getSent(); delete o[d.key]; setSent(o); render(); toast(`${d.key} back to pending.`);}
 // One delegated listener survives every re-render.
 $("app").addEventListener("click",e=>{
@@ -422,10 +538,10 @@ $("app").addEventListener("click",e=>{
   if(b.dataset.act==="discard")discard(i); else if(b.dataset.act==="restore")restore(i); else if(b.dataset.act==="copy")copy(i); else if(b.dataset.act==="unsent")unsent(i); else if(b.dataset.act==="save")saveMedia(i); else if(b.dataset.act==="next")nextOpt(i); else if(b.dataset.act==="undosent")undoSent(i); else if(b.dataset.act==="sentdone")markSent(i,b.closest(".card"));
 });
 
-// Cross-device: read public discard issues (title + author only) from the GitHub API.
+// Cross-device: read discard/sent issues (title + author + key-only body) from the GitHub API.
 async function refreshSynced(){
   try{
-    const r=await fetch(`https://api.github.com/repos/${REPO}/issues?state=all&per_page=100&sort=created&direction=desc`,{cache:"no-store",headers:{Accept:"application/vnd.github+json"}});
+    const r=await fetch(`${API}/issues?state=all&per_page=100&sort=created&direction=desc`,{cache:"no-store",headers:authHeaders()});
     if(!r.ok) return;
     const s=new Set(), ss=new Map();
     for(const it of await r.json()){
@@ -445,10 +561,11 @@ async function refreshSynced(){
     render();
   }catch(e){}
 }
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&DATA)refreshSynced();});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&DATA){refreshSynced();flushSync({manual:false});}});
+$("syncAll").addEventListener("click",()=>{if(syncState!=="syncing")flushSync({manual:true});});
 
 $("unlock").onclick=unlock;$("pw").addEventListener("keydown",e=>{if(e.key==="Enter")unlock();});
-$("lock").onclick=()=>{localStorage.removeItem(LS);KEY=null;Object.values(MEDIA).flat().forEach(x=>x&&x.url&&URL.revokeObjectURL(x.url));MEDIA={};DATA=null;DRAFTS=[];$("pending").innerHTML="";$("history").innerHTML="";$("app").classList.add("hidden");$("gate").classList.remove("hidden");$("lock").classList.add("hidden");$("syncAll").classList.add("hidden");$("syncAll").removeAttribute("href");$("syncAll").textContent="Sync";$("sub").textContent="Locked";};
+$("lock").onclick=()=>{localStorage.removeItem(LS);KEY=null;SYNC_TOKEN=null;Object.values(MEDIA).flat().forEach(x=>x&&x.url&&URL.revokeObjectURL(x.url));MEDIA={};DATA=null;DRAFTS=[];syncState="idle";$("pending").innerHTML="";$("history").innerHTML="";$("app").classList.add("hidden");$("gate").classList.remove("hidden");$("lock").classList.add("hidden");$("syncAll").classList.add("hidden");const lbl=$("syncAll").querySelector(".lbl");if(lbl)lbl.textContent="Sync";$("sub").textContent="Locked";};
 fetch("drafts.enc.json?v="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}).then(async e=>{ENV=e;if(!(await tryRemembered()))$("pw").focus();})
   .catch(e=>{$("err").textContent="Could not load the encrypted drafts file.";});
 if("serviceWorker" in navigator){navigator.serviceWorker.register("../sw.js",{scope:"../",updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});}
