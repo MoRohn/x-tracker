@@ -1,16 +1,16 @@
 {
- "published_et": "Nov 22, 4:56 PM ET",
- "generated_at": "2026-11-22T02:33:51.758836+00:00",
- "generated_et": "Nov 21, 9:33 PM ET",
+ "published_et": "Nov 22, 9:33 PM ET",
+ "generated_at": "2026-11-23T02:33:40.343027+00:00",
+ "generated_et": "Nov 22, 9:33 PM ET",
  "handle": "RohnSpringfield",
  "since_et": "Nov 20, 2026",
- "snapshots": 3,
- "delta_since": "Nov 21 6:36 AM",
+ "snapshots": 4,
+ "delta_since": "Nov 21 9:33 PM",
  "min_n": 5,
  "kpi": {
   "views": {
-   "value": 166,
-   "delta": 22
+   "value": 167,
+   "delta": 1
   },
   "posts": {
    "value": 17,
@@ -19,7 +19,7 @@
     "Reply": 8,
     "Quote": 1
    },
-   "delta": 5
+   "delta": 0
   },
   "followers": {
    "value": 1,
@@ -29,17 +29,17 @@
   },
   "median": {
    "value": 5,
-   "delta": -2.5
+   "delta": 0
   },
   "eng_rate": {
-   "value": 3.6,
-   "eng": 6,
-   "delta": 0.1
+   "value": 4.2,
+   "eng": 7,
+   "delta": 0.6
   },
   "top": {
    "id": "2123750965438497269",
    "label": "Turning 35, #KeepBuilding → @TonyChanBuilds",
-   "views": 64,
+   "views": 65,
    "type": "Reply",
    "et": "Nov 20 7:11 AM",
    "url": "https://x.com/RohnSpringfield/status/2123750965438497269"
@@ -49,11 +49,11 @@
   "all": {
    "stats": {
     "n": 17,
-    "views": 166,
+    "views": 167,
     "median": 5,
-    "eng": 6,
-    "eng_rate": 3.6,
-    "likes": 3
+    "eng": 7,
+    "eng_rate": 4.2,
+    "likes": 4
    },
    "median_all": 5,
    "days_active": 2,
@@ -71,11 +71,11 @@
     },
     {
      "n": 8,
-     "views": 129,
+     "views": 130,
      "median": 8.5,
-     "eng": 6,
-     "eng_rate": 4.7,
-     "likes": 3,
+     "eng": 7,
+     "eng_rate": 5.4,
+     "likes": 4,
      "name": "Reply",
      "enough": true,
      "mult": 1.7
@@ -95,11 +95,11 @@
    "formats": [
     {
      "n": 8,
-     "views": 129,
+     "views": 130,
      "median": 8.5,
-     "eng": 6,
-     "eng_rate": 4.7,
-     "likes": 3,
+     "eng": 7,
+     "eng_rate": 5.4,
+     "likes": 4,
      "name": "Reply",
      "enough": true,
      "mult": 1.7
@@ -140,11 +140,11 @@
    ],
    "best_format": {
     "n": 8,
-    "views": 129,
+    "views": 130,
     "median": 8.5,
-    "eng": 6,
-    "eng_rate": 4.7,
-    "likes": 3,
+    "eng": 7,
+    "eng_rate": 5.4,
+    "likes": 4,
     "name": "Reply",
     "enough": true,
     "mult": 1.7
@@ -152,11 +152,11 @@
    "best_hour": null,
    "hour_most_posts": {
     "n": 8,
-    "views": 103,
+    "views": 104,
     "median": 7.5,
-    "eng": 3,
-    "eng_rate": 2.9,
-    "likes": 1,
+    "eng": 4,
+    "eng_rate": 3.8,
+    "likes": 2,
     "name": "7 AM",
     "enough": true,
     "mult": 1.5
@@ -166,9 +166,9 @@
      "n": 4,
      "views": 17,
      "median": 3.0,
-     "eng": 1,
-     "eng_rate": 5.9,
-     "likes": 0,
+     "eng": 2,
+     "eng_rate": 11.8,
+     "likes": 1,
      "name": "AI building in practice",
      "target": 35,
      "share": 24
@@ -197,7 +197,7 @@
     },
     {
      "n": 8,
-     "views": 118,
+     "views": 119,
      "median": 6.0,
      "eng": 4,
      "eng_rate": 3.4,
@@ -243,10 +243,10 @@
     },
     {
      "n": 3,
-     "views": 72,
+     "views": 73,
      "median": 5,
      "eng": 2,
-     "eng_rate": 2.8,
+     "eng_rate": 2.7,
      "likes": 1,
      "name": "Personal story / confession",
      "enough": false,
@@ -267,9 +267,9 @@
      "n": 6,
      "views": 22,
      "median": 3.0,
-     "eng": 1,
-     "eng_rate": 4.5,
-     "likes": 0,
+     "eng": 2,
+     "eng_rate": 9.1,
+     "likes": 1,
      "name": "Hot take",
      "enough": true,
      "mult": 0.6
@@ -290,9 +290,9 @@
     {
      "target": "@TonyChanBuilds",
      "replies": 2,
-     "views": 72,
-     "followers": 2394,
-     "parent_views": 5053,
+     "views": 73,
+     "followers": 2543,
+     "parent_views": 5155,
      "parent_replies": 71,
      "capture": 1.42
     },
@@ -300,35 +300,35 @@
      "target": "@MicroLaunchHQ",
      "replies": 1,
      "views": 27,
-     "followers": 11163,
-     "parent_views": 1723,
+     "followers": 11169,
+     "parent_views": 1760,
      "parent_replies": 35,
-     "capture": 1.57
+     "capture": 1.53
     },
     {
      "target": "@TomasMann1878",
      "replies": 1,
      "views": 10,
-     "followers": 3076,
-     "parent_views": 669,
+     "followers": 3096,
+     "parent_views": 676,
      "parent_replies": 5,
-     "capture": 1.49
+     "capture": 1.48
     },
     {
      "target": "@Unnati_builds24",
      "replies": 1,
      "views": 9,
-     "followers": 8371,
-     "parent_views": 613,
+     "followers": 8375,
+     "parent_views": 689,
      "parent_replies": 8,
-     "capture": 1.47
+     "capture": 1.31
     },
     {
      "target": "@Nehakathare",
      "replies": 1,
      "views": 7,
-     "followers": 3227,
-     "parent_views": 17733,
+     "followers": 3480,
+     "parent_views": 17814,
      "parent_replies": 311,
      "capture": 0.04
     },
@@ -336,8 +336,8 @@
      "target": "@anupamrjp",
      "replies": 1,
      "views": 2,
-     "followers": 23557,
-     "parent_views": 3130,
+     "followers": 23592,
+     "parent_views": 3178,
      "parent_replies": 63,
      "capture": 0.06
     },
@@ -345,28 +345,33 @@
      "target": "@BoboLinNotes",
      "replies": 1,
      "views": 2,
-     "followers": 4647,
-     "parent_views": 152,
-     "parent_replies": 3,
-     "capture": 1.32
+     "followers": 4670,
+     "parent_views": 193,
+     "parent_replies": 4,
+     "capture": 1.04
     }
    ],
    "by_day": [
     {
      "label": "Nov 20",
-     "views": 147,
+     "views": 148,
      "posts": 12
     },
     {
      "label": "Nov 21",
      "views": 19,
      "posts": 5
+    },
+    {
+     "label": "Nov 22",
+     "views": 0,
+     "posts": 0
     }
    ],
    "by_month": [
     {
      "label": "Nov 2026",
-     "views": 166
+     "views": 167
     }
    ],
    "heat": [
@@ -413,7 +418,7 @@
     [
      0,
      0,
-     100,
+     101,
      20,
      0,
      27,
@@ -445,7 +450,7 @@
     {
      "id": "2123750965438497269",
      "label": "Turning 35, #KeepBuilding → @TonyChanBuilds",
-     "views": 64,
+     "views": 65,
      "type": "Reply",
      "et": "Nov 20 7:11 AM",
      "url": "https://x.com/RohnSpringfield/status/2123750965438497269"
@@ -581,6 +586,10 @@
   {
    "label": "Nov 21 9:33 PM",
    "followers": 1
+  },
+  {
+   "label": "Nov 22 9:33 PM",
+   "followers": 1
   }
  ],
  "heat_cols": [
@@ -594,7 +603,7 @@
   "9p–12a"
  ],
  "funnel": {
-  "drafted": 17,
+  "drafted": 21,
   "approved": 11,
   "posted": 5
  },
@@ -614,7 +623,7 @@
   },
   {
    "label": "Follower history",
-   "value": "built from refreshes; 3 snapshot(s) so far, X has no history endpoint"
+   "value": "built from refreshes; 4 snapshot(s) so far, X has no history endpoint"
   },
   {
    "label": "Engagement rate",
