@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-version="approve-v9">
+<html lang="en" data-version="approve-v10">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -82,6 +82,9 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
 .win{display:inline-block;border-radius:99px;padding:2px 9px;font-size:11px;font-weight:700}
 .win.ok{background:rgba(54,192,138,.16);color:var(--ok)}.win.late{background:rgba(245,180,0,.16);color:var(--warn)}
 .draftlbl{font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+#syncAll,#lock{padding:7px 12px;font-size:12.5px}
+#syncAll{background:var(--c0);color:#fff;text-decoration:none}
+#syncAll:hover{filter:brightness(1.08)}
 </style>
 </head>
 <body>
@@ -90,6 +93,7 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
     <div><h1>Post Approvals 🔒</h1><div class="sub" id="sub">Private · encrypted in your browser</div></div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <nav class="tabs"><a href="../">Dashboard</a><a href="./" class="on">Approvals 🔒</a></nav>
+      <a id="syncAll" class="hidden" target="_blank" rel="noopener noreferrer" title="File one GitHub issue for every unsynced History item">Sync</a>
       <button id="lock" class="hidden" title="Forget the key on this device">Lock</button>
     </div>
   </header>
@@ -105,12 +109,12 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
   <section id="app" class="hidden">
     <div id="pending"></div>
     <details id="histWrap" class="card"><summary id="histSum">History</summary><div id="history"></div></details>
-    <p class="sub">Post opens X with the text prefilled; nothing is sent until you press Post in X. After you post, tap Sent — the card moves to History on this device (30s Undo). Tonight’s check against your real posts on X marks it posted on every device. Discard hides a draft right away. Tap “Sync to Grok Bot” to file the key-only GitHub issue; once filed, the draft is hidden on all your devices and dropped from the queue at the next publish.</p>
+    <p class="sub">Post opens X with the text prefilled; nothing is sent until you press Post in X. After you post, tap Sent — the card moves to History on this device (30s Undo). Tonight’s check against your real posts on X marks it posted on every device. Discard hides a draft right away. Unsynced discards (and local Sent taps) sit in History; tap Sync in the top bar to file one key-only GitHub issue for all of them, then Create once. Once submitted, they show as synced on the next refresh and drop from the queue at the next publish. Restore a discard before you Sync if you still want it.</p>
   </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const APP_VERSION="approve-v9";
+const APP_VERSION="approve-v10";
 const LS="xt-approvals-key-v1";
 const LD="xt-discarded-v1";
 const LSDONE="xt-sentdone-v1";  // keys confirmed "Sent" on this device: {key:{t,opt}}
@@ -188,6 +192,26 @@ function intent(d){
   return "https://x.com/intent/post?"+p.toString();
 }
 function issueUrl(key){const q=new URLSearchParams({title:`discard: ${key}`,body:`Discard request for queue key ${key}, sent from the approvals page.\n\nKey only; no draft text. The box closes this issue after marking the draft discarded.`});return `https://github.com/${REPO}/issues/new?${q}`;}
+// Parses GitHub issue titles/bodies from the approvals page (mirrors sync_parse.py). Keys only; no draft text.
+const KEY_OK=/^[A-Za-z][A-Za-z0-9_.\-]*$/, KEY_RESERVED=new Set(["items","item","sync","discard","sent","keys","key"]);
+const isKeyTok=t=>KEY_OK.test(t)&&!KEY_RESERVED.has(String(t).toLowerCase())&&!/^opt[1-9]$/i.test(t);
+function keysFromDiscardRest(rest){
+  if(/^\d+\s+items?$/i.test((rest||"").trim())) return [];
+  return ((rest||"").match(/[A-Za-z0-9_.\-]+/g)||[]).filter(isKeyTok);
+}
+function parseSyncIssue(title,body){
+  const discards=[],sents=[];
+  const addD=k=>{if(k&&!discards.includes(k))discards.push(k);};
+  const addS=(k,opt)=>{if(k&&!sents.some(x=>x[0]===k))sents.push([k,+(opt||1)]);};
+  const sm=/^\s*sent:\s*([A-Za-z][A-Za-z0-9_.\-]*)(?:\s+opt([1-9]))?\s*$/i.exec(title||"");
+  if(sm) addS(sm[1],sm[2]||1);
+  else{const dm=/^\s*discard:\s*(.+?)\s*$/i.exec(title||""); if(dm) keysFromDiscardRest(dm[1]).forEach(addD);}
+  for(const line of (body||"").split(/\r?\n/)){
+    const d=/^\s*discard:\s*([A-Za-z][A-Za-z0-9_.\-]*)\s*$/i.exec(line); if(d){addD(d[1]);continue;}
+    const s=/^\s*sent:\s*([A-Za-z][A-Za-z0-9_.\-]*)(?:\s+opt([1-9]))?\s*$/i.exec(line); if(s) addS(s[1],s[2]||1);
+  }
+  return {discards,sents};
+}
 const open_=d=>d.status==="drafted"||d.status==="approved";
 const getDone=()=>{const o=store.get(LSDONE,{});return o&&typeof o==="object"&&!Array.isArray(o)?o:{};};
 const setDone=o=>store.set(LSDONE,o);
@@ -196,6 +220,34 @@ const UNDO_MS=30000;
 const isSynced=d=>open_(d)&&SYNCED.has(d.key);
 const isLocalDiscard=d=>open_(d)&&!SYNCED.has(d.key)&&getLD().includes(d.key);
 const isPending=d=>open_(d)&&!SYNCED.has(d.key)&&!getLD().includes(d.key)&&!isSentDone(d);
+function unsyncedItems(){
+  const discards=[],sents=[];
+  for(const d of DRAFTS){
+    if(isLocalDiscard(d)) discards.push(d.key);
+    else if(isSentDone(d)&&!SYNCED_SENT.has(d.key)){
+      const dn=getDone()[d.key]; sents.push({key:d.key,opt:(dn&&dn.opt!=null?dn.opt:0)+1});
+    }
+  }
+  return {discards,sents};
+}
+function syncAllUrl(u){
+  u=u||unsyncedItems();
+  const {discards,sents}=u, n=discards.length+sents.length;
+  if(!n) return "";
+  const lines=["Sync request from the approvals page. Keys only; no draft text. The box closes this issue after applying the changes.","",
+    ...discards.map(k=>`discard: ${k}`), ...sents.map(s=>`sent: ${s.key} opt${s.opt}`)];
+  let title;
+  if(!sents.length&&discards.length===1) title=`discard: ${discards[0]}`;
+  else if(!sents.length){const t2=`discard: ${discards.join(" ")}`; title=t2.length<=200?t2:`sync: ${n} items`;}
+  else title=`sync: ${n} items`;
+  return `https://github.com/${REPO}/issues/new?`+new URLSearchParams({title,body:lines.join("\n")});
+}
+function updateSyncBtn(){
+  const a=$("syncAll"); if(!a) return;
+  const u=unsyncedItems(), n=u.discards.length+u.sents.length;
+  if(!DATA||!n){a.classList.add("hidden");a.removeAttribute("href");a.textContent="Sync";return;}
+  a.classList.remove("hidden"); a.href=syncAllUrl(u); a.textContent=`Sync (${n})`;
+}
 const STATUS={drafted:["Drafted · needs your OK",""],approved:["Approved · awaiting your tap","ok"],posted:["Posted","ok"],discarded:["Discarded",""]};
 
 const nf=n=>n==null?"—":n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M":n>=1e4?Math.round(n/1e3)+"K":n>=1e3?(n/1e3).toFixed(1).replace(/\.0$/,"")+"K":String(n);
@@ -269,16 +321,19 @@ function render(){
   const pend=DRAFTS.map((d,i)=>[d,i]).filter(([d])=>isPending(d));
   const groups={};pend.forEach(([d,i])=>{const g=`${d.batch||"Batch"} · ${d.slot==="asap"?"Replies (ASAP)":slotET(d.slot)}`;(groups[g]=groups[g]||[]).push([d,i]);});
   const order=Object.keys(groups).sort((a,b)=>{const sa=groups[a][0][0].slot,sb=groups[b][0][0].slot;return (sa==="asap"?"":sa).localeCompare(sb==="asap"?"":sb);});
-  $("pending").innerHTML=order.length?order.map(g=>`<h2>${esc(g)}</h2>`+groups[g].map(([d,i])=>card(d,i)).join("")).join(""):`<div class="card">Nothing pending. New drafts appear here after each batch.</div>`;
+  const uns=unsyncedItems(), nUn=uns.discards.length+uns.sents.length;
+  const emptyPend=uns.discards.length?`<div class="card">Nothing pending. ${uns.discards.length} draft${uns.discards.length===1?"":"s"} ${uns.discards.length===1?"is":"are"} in History as discarded on this device and not synced yet. Restore any you still want, or tap Sync to apply the discards everywhere.</div>`:`<div class="card">Nothing pending. New drafts appear here after each batch.</div>`;
+  $("pending").innerHTML=order.length?order.map(g=>`<h2>${esc(g)}</h2>`+groups[g].map(([d,i])=>card(d,i)).join("")).join(""):emptyPend;
   const hist=DRAFTS.map((d,i)=>[d,i]).filter(([d])=>!isPending(d));
   // unsynced local discards first so the Sync link is easy to find
   const recent=d=>{const x=getDone()[d.key];return isSentDone(d)&&x&&Date.now()-x.t<UNDO_MS;};
   hist.sort((a,b)=>((recent(b[0])?2:0)+(isLocalDiscard(b[0])?1:0))-((recent(a[0])?2:0)+(isLocalDiscard(a[0])?1:0)));
   if(hist.some(([d])=>recent(d))) $("histWrap").open=true;
-  $("histSum").textContent=`History (${hist.length})`+(hist.some(([d])=>isLocalDiscard(d))?" · needs sync":"");
+  $("histSum").textContent=`History (${hist.length})`+(nUn?" · needs sync":"");
   $("history").innerHTML=hist.map(([d,i])=>card(d,i)).join("");
   $("histWrap").classList.toggle("hidden",!hist.length);
   if(hist.some(([d])=>isLocalDiscard(d))) $("histWrap").open=true;
+  updateSyncBtn();
   updateLive();
 }
 // ---------- draft media: decrypt to object URLs (images are inline base64 in the payload; videos are separate AES-GCM blobs) ----------
@@ -376,11 +431,12 @@ async function refreshSynced(){
     for(const it of await r.json()){
       if(it.pull_request) continue;
       if((it.user?.login||"").toLowerCase()!==OWNER) continue;
-      const m=/^\s*discard:\s*([A-Za-z0-9_.\-]+)\s*$/i.exec(it.title||"");
-      if(m) s.add(m[1]);
+      const p=parseSyncIssue(it.title||"",it.body||"");
+      for(const k of p.discards) s.add(k);
       // sent: honored while open, or once closed as completed (the box closes it after marking the row); "not planned" = undone
-      const n=/^\s*sent:\s*([A-Za-z0-9_.\-]+)(?:\s+opt([1-9]))?\s*$/i.exec(it.title||"");
-      if(n&&(it.state==="open"||it.state_reason==="completed")&&!ss.has(n[1])) ss.set(n[1],(+(n[2]||1))-1);
+      if(it.state==="open"||it.state_reason==="completed"){
+        for(const [k,opt] of p.sents) if(!ss.has(k)) ss.set(k,opt-1);
+      }
     }
     SYNCED=s; SYNCED_SENT=ss;
     { const o=getDone(); let ch=false; for(const k of Object.keys(o)) if(ss.has(k)&&Date.now()-o[k].t>=UNDO_MS){delete o[k];ch=true;} if(ch) setDone(o); }
@@ -392,7 +448,7 @@ async function refreshSynced(){
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&DATA)refreshSynced();});
 
 $("unlock").onclick=unlock;$("pw").addEventListener("keydown",e=>{if(e.key==="Enter")unlock();});
-$("lock").onclick=()=>{localStorage.removeItem(LS);KEY=null;Object.values(MEDIA).flat().forEach(x=>x&&x.url&&URL.revokeObjectURL(x.url));MEDIA={};DATA=null;DRAFTS=[];$("pending").innerHTML="";$("history").innerHTML="";$("app").classList.add("hidden");$("gate").classList.remove("hidden");$("lock").classList.add("hidden");$("sub").textContent="Locked";};
+$("lock").onclick=()=>{localStorage.removeItem(LS);KEY=null;Object.values(MEDIA).flat().forEach(x=>x&&x.url&&URL.revokeObjectURL(x.url));MEDIA={};DATA=null;DRAFTS=[];$("pending").innerHTML="";$("history").innerHTML="";$("app").classList.add("hidden");$("gate").classList.remove("hidden");$("lock").classList.add("hidden");$("syncAll").classList.add("hidden");$("syncAll").removeAttribute("href");$("syncAll").textContent="Sync";$("sub").textContent="Locked";};
 fetch("drafts.enc.json?v="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}).then(async e=>{ENV=e;if(!(await tryRemembered()))$("pw").focus();})
   .catch(e=>{$("err").textContent="Could not load the encrypted drafts file.";});
 if("serviceWorker" in navigator){navigator.serviceWorker.register("../sw.js",{scope:"../",updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});}
