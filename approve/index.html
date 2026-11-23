@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-version="approve-v11">
+<html lang="en" data-version="approve-v12">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -21,6 +21,7 @@ body{padding:calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-righ
 .wrap{max-width:760px;margin:0 auto}
 header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
 h1{font-size:19px;margin:0;font-weight:650}.sub{color:var(--tx3);font-size:12px;margin-top:2px}
+.histfoot{color:var(--tx3);font-size:12px;margin:10px 2px 0;line-height:1.45}.histfoot a{color:var(--c0);text-decoration:none}
 .tabs{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:2px;flex-wrap:wrap}
 .tabs a{padding:5px 11px;border-radius:8px;color:var(--tx2);font-size:12px;font-weight:600;text-decoration:none}.tabs a.on{background:var(--line);color:var(--tx)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
@@ -130,12 +131,13 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
   <section id="app" class="hidden">
     <div id="pending"></div>
     <details id="histWrap" class="card"><summary id="histSum">History</summary><div id="history"></div></details>
+    <p class="histfoot" id="histFoot">Older items are archived. Live posts are on your <a href="https://x.com/RohnSpringfield" target="_blank" rel="noopener">X profile</a>.</p>
     <p class="sub">Post opens X with the text prefilled; nothing is sent until you press Post in X. After you post, tap Sent — the card moves to History (30s Undo) and syncs in the background. Discard hides a draft right away and also syncs in the background. Tonight’s check against your real posts on X confirms Sent items as posted on every device. If a sync can’t reach the server, a Sync button appears so you can retry.</p>
   </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const APP_VERSION="approve-v11";
+const APP_VERSION="approve-v12";
 const LS="xt-approvals-key-v1";
 const LD="xt-discarded-v1";
 const LSDONE="xt-sentdone-v1";  // keys confirmed "Sent" on this device: {key:{t,opt}}
@@ -238,6 +240,23 @@ function parseSyncIssue(title,body){
 const open_=d=>d.status==="drafted"||d.status==="approved";
 const getDone=()=>{const o=store.get(LSDONE,{});return o&&typeof o==="object"&&!Array.isArray(o)?o:{};};
 const setDone=o=>store.set(LSDONE,o);
+const LSR="xt-resolved-v12";  // {key: ms} tap/sync time for 24h History window; not cleared on sync
+const getRes=()=>{const o=store.get(LSR,{});return o&&typeof o==="object"&&!Array.isArray(o)?o:{};};
+const setRes=o=>store.set(LSR,o);
+function noteResolved(key,t){const o=getRes(); if(o[key]==null) o[key]=t||Date.now(); setRes(o);}
+function clearResolved(key){const o=getRes(); delete o[key]; setRes(o);}
+const HISTORY_MS=24*36e5;
+function resolvedMs(d){
+  const loc=getRes()[d.key]; if(loc!=null) return +loc;
+  const dn=getDone()[d.key]; if(dn&&dn.t) return +dn.t;
+  const q=getQ().find(x=>x.key===d.key); if(q&&q.t) return +q.t;
+  if(d.status==="posted"&&d.post_id){const t=tsFromId(d.post_id); if(t) return t;}
+  if(d.resolved_at){const t=Date.parse(d.resolved_at); if(!isNaN(t)) return t;}
+  if(d.post_id){const t=tsFromId(d.post_id); if(t) return t;}
+  if(d.drafted_at){const t=Date.parse(d.drafted_at); if(!isNaN(t)) return t;}
+  return null;
+}
+function inHistoryWindow(d){const t=resolvedMs(d); return t==null||(Date.now()-t)<=HISTORY_MS;}
 const isSentDone=d=>open_(d)&&!SYNCED.has(d.key)&&(SYNCED_SENT.has(d.key)||!!getDone()[d.key]);
 const UNDO_MS=30000;
 const isSynced=d=>open_(d)&&SYNCED.has(d.key);
@@ -410,7 +429,7 @@ function card(d,i){
       ${quoted}</div></div>`;
   return `<div class="card" data-key="${esc(d.key)}">${head}${thread}
     ${d.fact_check?`<div class="fc"><b>${d.type==="post"?"Source / fact check":"Fact check"}:</b> ${esc(d.fact_check)}</div>`:""}
-    ${d.status==="posted"&&d.post_id?`<div class="fc"><a style="color:inherit" href="https://x.com/RohnSpringfield/status/${esc(d.post_id)}" target="_blank" rel="noopener">View your live post ↗</a></div>`:""}
+    ${d.status==="posted"&&d.post_id?`<div class="fc"><a style="color:inherit" href="https://x.com/RohnSpringfield/status/${esc(d.post_id)}" target="_blank" rel="noopener">Open on X ↗</a></div>`:""}
     ${isPending(d)&&sentAt?`<div class="sentrow"><div class="m">${os.length>1?`Option ${(si.opt||0)+1} · `:""}Opened in X ${esc(ageStr(sentAt))}. Did it post?</div><div class="actions"><button type="button" class="btn primary sentbtn" data-act="sentdone" data-i="${i}">Sent</button><button type="button" data-act="unsent" data-i="${i}">Not sent</button></div></div>`:""}
     ${isSentDone(d)&&dn&&Date.now()-dn.t<UNDO_MS?`<div class="undo"><button type="button" data-act="undosent" data-i="${i}">Undo</button></div>`:""}
     ${isPending(d)&&!sentAt?`<div class="actions${(os.length>1)+(!!mk)?" many":""}"><a class="btn primary post" data-post="${i}" href="${esc(intent(d))}" target="_blank" rel="noopener">Post</a>${os.length>1?`<button type="button" data-act="next" data-i="${i}">Next Option</button>`:""}${mk?`<button type="button" data-act="save" data-i="${i}">Save ${mk}</button>`:""}<button type="button" data-act="copy" data-i="${i}">Copy</button><button type="button" class="discard" data-act="discard" data-i="${i}">Discard</button></div>${mk?`<div class="hint">Attach the saved ${mk} in X before posting.</div>`:""}`:""}
@@ -432,15 +451,17 @@ function render(){
   const uns=unsyncedItems(), nUn=uns.discards.length+uns.sents.length;
   const emptyPend=uns.discards.length?`<div class="card">Nothing pending. ${uns.discards.length} draft${uns.discards.length===1?"":"s"} ${uns.discards.length===1?"is":"are"} in History as discarded on this device and not synced yet. Restore any you still want, or tap Sync to apply the discards everywhere.</div>`:`<div class="card">Nothing pending. New drafts appear here after each batch.</div>`;
   $("pending").innerHTML=order.length?order.map(g=>`<h2>${esc(g)}</h2>`+groups[g].map(([d,i])=>card(d,i)).join("")).join(""):emptyPend;
-  const hist=DRAFTS.map((d,i)=>[d,i]).filter(([d])=>!isPending(d));
+  const hist=DRAFTS.map((d,i)=>[d,i]).filter(([d])=>!isPending(d)&&inHistoryWindow(d));
   // unsynced local discards first so the Sync link is easy to find
   const recent=d=>{const x=getDone()[d.key];return isSentDone(d)&&x&&Date.now()-x.t<UNDO_MS;};
   hist.sort((a,b)=>((recent(b[0])?2:0)+(isLocalDiscard(b[0])?1:0))-((recent(a[0])?2:0)+(isLocalDiscard(a[0])?1:0)));
   if(hist.some(([d])=>recent(d))) $("histWrap").open=true;
   $("histSum").textContent=`History (${hist.length})`+(nUn?" · needs sync":"");
-  $("history").innerHTML=hist.map(([d,i])=>card(d,i)).join("");
-  $("histWrap").classList.toggle("hidden",!hist.length);
+  $("history").innerHTML=hist.length?hist.map(([d,i])=>card(d,i)).join(""):`<div class="sub" style="margin:0">No items in the last 24 hours.</div>`;
+  $("histWrap").classList.remove("hidden");
   if(hist.some(([d])=>isLocalDiscard(d))) $("histWrap").open=true;
+  // prune local resolution times for keys no longer on the page
+  { const o=getRes(), live=new Set(DRAFTS.map(d=>d.key)); let ch=false; for(const k of Object.keys(o)) if(!live.has(k)&&(Date.now()-o[k])>HISTORY_MS){delete o[k];ch=true;} if(ch) setRes(o); }
   updateSyncBtn();
   updateLive();
 }
@@ -494,13 +515,15 @@ function show(data){
 // Discard: hide immediately, queue a key-only sync, auto-file after the undo window.
 function discard(i){
   const d=DRAFTS[i]; if(!d) return;
+  const t=Date.now();
   setLD([...getLD(),d.key]);
-  enqueue({key:d.key,kind:"discard",t:Date.now()});
+  noteResolved(d.key,t);
+  enqueue({key:d.key,kind:"discard",t});
   render();
-  toast(`Discarded ${d.key}.`,{undo:()=>{dequeue(d.key);setLD(getLD().filter(k=>k!==d.key));render();updateSyncBtn();toast(`Restored ${d.key}.`);},ms:UNDO_MS});
+  toast(`Discarded ${d.key}.`,{undo:()=>{dequeue(d.key);clearResolved(d.key);setLD(getLD().filter(k=>k!==d.key));render();updateSyncBtn();toast(`Restored ${d.key}.`);},ms:UNDO_MS});
   scheduleFlush();
 }
-function restore(i){const d=DRAFTS[i]; if(!d) return; dequeue(d.key); setLD(getLD().filter(k=>k!==d.key)); render(); updateSyncBtn(); toast(`Restored ${d.key}.`);}
+function restore(i){const d=DRAFTS[i]; if(!d) return; dequeue(d.key); clearResolved(d.key); setLD(getLD().filter(k=>k!==d.key)); render(); updateSyncBtn(); toast(`Restored ${d.key}.`);}
 async function copy(i){const t=curText(DRAFTS[i]);
   try{await navigator.clipboard.writeText(t);}catch(e){const ta=document.createElement("textarea");ta.value=t;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,t.length);document.execCommand("copy");ta.remove();}
   toast("Copied");}
@@ -521,14 +544,16 @@ function nextOpt(i){const d=DRAFTS[i]; if(!d) return; const n=opts(d).length; if
 function markSent(i,el){
   const d=DRAFTS[i]; if(!d) return;
   const si=sentInfo(d.key)||{opt:optIdx(d)};
-  const o=getDone(); o[d.key]={t:Date.now(),opt:si.opt||0}; setDone(o);
-  enqueue({key:d.key,kind:"sent",opt:si.opt||0,t:Date.now()});
+  const t=Date.now();
+  const o=getDone(); o[d.key]={t,opt:si.opt||0}; setDone(o);
+  noteResolved(d.key,t);
+  enqueue({key:d.key,kind:"sent",opt:si.opt||0,t});
   if(el) el.classList.add("out");
   setTimeout(render,340); setTimeout(render,UNDO_MS+500);
-  toast(`${d.key} moved to History as sent.`,{undo:()=>{const o=getDone();delete o[d.key];setDone(o);dequeue(d.key);render();updateSyncBtn();toast(`${d.key} back to pending.`);},ms:UNDO_MS});
+  toast(`${d.key} moved to History as sent.`,{undo:()=>{const o=getDone();delete o[d.key];setDone(o);dequeue(d.key);clearResolved(d.key);render();updateSyncBtn();toast(`${d.key} back to pending.`);},ms:UNDO_MS});
   scheduleFlush();
 }
-function undoSent(i){const d=DRAFTS[i]; if(!d) return; const o=getDone(); delete o[d.key]; setDone(o); dequeue(d.key); render(); updateSyncBtn();
+function undoSent(i){const d=DRAFTS[i]; if(!d) return; const o=getDone(); delete o[d.key]; setDone(o); dequeue(d.key); clearResolved(d.key); render(); updateSyncBtn();
   toast(SYNCED_SENT.has(d.key)?`${d.key} restored here. It may already be marked sent after the next publish.`:`${d.key} back to pending.`,{ms:4000});}
 function unsent(i){const d=DRAFTS[i]; if(!d) return; const o=getSent(); delete o[d.key]; setSent(o); render(); toast(`${d.key} back to pending.`);}
 // One delegated listener survives every re-render.
@@ -548,10 +573,11 @@ async function refreshSynced(){
       if(it.pull_request) continue;
       if((it.user?.login||"").toLowerCase()!==OWNER) continue;
       const p=parseSyncIssue(it.title||"",it.body||"");
-      for(const k of p.discards) s.add(k);
+      const issued=Date.parse(it.created_at||it.createdAt||"")||Date.now();
+      for(const k of p.discards){ s.add(k); noteResolved(k,issued); }
       // sent: honored while open, or once closed as completed (the box closes it after marking the row); "not planned" = undone
       if(it.state==="open"||it.state_reason==="completed"){
-        for(const [k,opt] of p.sents) if(!ss.has(k)) ss.set(k,opt-1);
+        for(const [k,opt] of p.sents){ if(!ss.has(k)) ss.set(k,opt-1); noteResolved(k,issued); }
       }
     }
     SYNCED=s; SYNCED_SENT=ss;
