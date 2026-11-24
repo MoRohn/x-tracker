@@ -1,210 +1,221 @@
 {
- "published_et": "Nov 23, 4:56 PM ET",
- "generated_at": "2026-11-23T02:33:40.343027+00:00",
- "generated_et": "Nov 22, 9:33 PM ET",
+ "published_et": "Nov 23, 9:28 PM ET",
+ "generated_at": "2026-11-24T02:28:40.363644+00:00",
+ "generated_et": "Nov 23, 9:28 PM ET",
  "handle": "RohnSpringfield",
  "since_et": "Nov 20, 2026",
- "snapshots": 4,
- "delta_since": "Nov 21 9:33 PM",
+ "snapshots": 5,
+ "delta_since": "Nov 22 9:33 PM",
  "min_n": 5,
  "kpi": {
   "views": {
-   "value": 167,
-   "delta": 1
+   "value": 836,
+   "delta": 661
   },
   "posts": {
-   "value": 17,
+   "value": 26,
    "split": {
-    "Original": 8,
-    "Reply": 8,
-    "Quote": 1
+    "Original": 12,
+    "Reply": 11,
+    "Quote": 3
    },
-   "delta": 0
+   "delta": 10
   },
   "followers": {
    "value": 1,
    "goal": 1000,
-   "following": 1,
+   "following": 6,
    "delta": 0
   },
   "median": {
-   "value": 5,
-   "delta": 0
+   "value": 6.0,
+   "delta": 1.0
   },
   "eng_rate": {
-   "value": 4.2,
-   "eng": 7,
-   "delta": 0.6
+   "value": 1.2,
+   "eng": 10,
+   "delta": -3.0
   },
   "top": {
-   "id": "2123750965438497269",
-   "label": "Turning 35, #KeepBuilding → @TonyChanBuilds",
-   "views": 65,
+   "id": "2124847190812291350",
+   "label": "@suraj_sharma14 Stage 3 hides one of the hardest parts in on",
+   "views": 626,
    "type": "Reply",
-   "et": "Nov 20 7:11 AM",
-   "url": "https://x.com/RohnSpringfield/status/2123750965438497269"
+   "et": "Nov 23 7:47 AM",
+   "url": "https://x.com/RohnSpringfield/status/2124847190812291350"
   }
  },
  "windows": {
   "all": {
    "stats": {
-    "n": 17,
-    "views": 167,
-    "median": 5,
-    "eng": 7,
-    "eng_rate": 4.2,
-    "likes": 4
+    "n": 26,
+    "views": 836,
+    "median": 6.0,
+    "eng": 10,
+    "eng_rate": 1.2,
+    "likes": 6
    },
-   "median_all": 5,
-   "days_active": 2,
+   "median_all": 6.0,
+   "days_active": 3,
    "types": [
     {
-     "n": 8,
-     "views": 34,
-     "median": 3.0,
+     "n": 12,
+     "views": 59,
+     "median": 4.5,
      "eng": 0,
      "eng_rate": 0.0,
      "likes": 0,
      "name": "Original",
      "enough": true,
-     "mult": 0.6
+     "mult": 0.8
     },
     {
-     "n": 8,
-     "views": 130,
-     "median": 8.5,
-     "eng": 7,
-     "eng_rate": 5.4,
-     "likes": 4,
+     "n": 11,
+     "views": 764,
+     "median": 8,
+     "eng": 10,
+     "eng_rate": 1.3,
+     "likes": 6,
      "name": "Reply",
      "enough": true,
-     "mult": 1.7
+     "mult": 1.3
     },
     {
-     "n": 1,
-     "views": 3,
-     "median": 3,
+     "n": 3,
+     "views": 13,
+     "median": 4,
      "eng": 0,
      "eng_rate": 0.0,
      "likes": 0,
      "name": "Quote",
      "enough": false,
-     "mult": 0.6
+     "mult": 0.7
     }
    ],
    "formats": [
     {
-     "n": 8,
-     "views": 130,
-     "median": 8.5,
-     "eng": 7,
-     "eng_rate": 5.4,
-     "likes": 4,
+     "n": 11,
+     "views": 764,
+     "median": 8,
+     "eng": 10,
+     "eng_rate": 1.3,
+     "likes": 6,
      "name": "Reply",
      "enough": true,
-     "mult": 1.7
+     "mult": 1.3
     },
     {
-     "n": 1,
-     "views": 8,
-     "median": 8,
+     "n": 2,
+     "views": 16,
+     "median": 8.0,
      "eng": 0,
      "eng_rate": 0.0,
      "likes": 0,
      "name": "Image",
      "enough": false,
-     "mult": 1.6
+     "mult": 1.3
     },
     {
-     "n": 7,
-     "views": 26,
+     "n": 1,
+     "views": 7,
+     "median": 7,
+     "eng": 0,
+     "eng_rate": 0.0,
+     "likes": 0,
+     "name": "Video",
+     "enough": false,
+     "mult": 1.2
+    },
+    {
+     "n": 3,
+     "views": 13,
+     "median": 4,
+     "eng": 0,
+     "eng_rate": 0.0,
+     "likes": 0,
+     "name": "Quote",
+     "enough": false,
+     "mult": 0.7
+    },
+    {
+     "n": 9,
+     "views": 36,
      "median": 3,
      "eng": 0,
      "eng_rate": 0.0,
      "likes": 0,
      "name": "Plain text",
      "enough": true,
-     "mult": 0.6
-    },
-    {
-     "n": 1,
-     "views": 3,
-     "median": 3,
-     "eng": 0,
-     "eng_rate": 0.0,
-     "likes": 0,
-     "name": "Quote",
-     "enough": false,
-     "mult": 0.6
+     "mult": 0.5
     }
    ],
    "best_format": {
-    "n": 8,
-    "views": 130,
-    "median": 8.5,
-    "eng": 7,
-    "eng_rate": 5.4,
-    "likes": 4,
+    "n": 11,
+    "views": 764,
+    "median": 8,
+    "eng": 10,
+    "eng_rate": 1.3,
+    "likes": 6,
     "name": "Reply",
     "enough": true,
-    "mult": 1.7
+    "mult": 1.3
    },
    "best_hour": null,
    "hour_most_posts": {
-    "n": 8,
-    "views": 104,
-    "median": 7.5,
-    "eng": 4,
-    "eng_rate": 3.8,
-    "likes": 2,
+    "n": 11,
+    "views": 744,
+    "median": 7,
+    "eng": 7,
+    "eng_rate": 0.9,
+    "likes": 4,
     "name": "7 AM",
     "enough": true,
-    "mult": 1.5
+    "mult": 1.2
    },
    "pillars": [
     {
-     "n": 4,
-     "views": 17,
-     "median": 3.0,
+     "n": 7,
+     "views": 39,
+     "median": 6,
      "eng": 2,
-     "eng_rate": 11.8,
+     "eng_rate": 5.1,
      "likes": 1,
      "name": "AI building in practice",
      "target": 35,
-     "share": 24
+     "share": 27
     },
     {
-     "n": 4,
-     "views": 23,
-     "median": 5.5,
+     "n": 5,
+     "views": 27,
+     "median": 4,
      "eng": 0,
      "eng_rate": 0.0,
      "likes": 0,
      "name": "Data/systems lessons",
      "target": 25,
-     "share": 24
+     "share": 19
     },
     {
-     "n": 1,
-     "views": 8,
-     "median": 8,
+     "n": 2,
+     "views": 11,
+     "median": 5.5,
      "eng": 1,
-     "eng_rate": 12.5,
+     "eng_rate": 9.1,
      "likes": 1,
      "name": "Expert know-how → agents (acumane)",
      "target": 20,
-     "share": 6
+     "share": 8
     },
     {
-     "n": 8,
-     "views": 119,
+     "n": 12,
+     "views": 759,
      "median": 6.0,
-     "eng": 4,
-     "eng_rate": 3.4,
-     "likes": 2,
+     "eng": 7,
+     "eng_rate": 0.9,
+     "likes": 4,
      "name": "Founder life / BLERBZ",
      "target": 20,
-     "share": 47
+     "share": 46
     }
    ],
    "hooks": [
@@ -217,7 +228,7 @@
      "likes": 1,
      "name": "Proof / showcase",
      "enough": false,
-     "mult": 3.5
+     "mult": 2.9
     },
     {
      "n": 2,
@@ -228,7 +239,7 @@
      "likes": 0,
      "name": "One-line answer",
      "enough": false,
-     "mult": 1.7
+     "mult": 1.4
     },
     {
      "n": 1,
@@ -239,40 +250,40 @@
      "likes": 0,
      "name": "Recommendation",
      "enough": false,
-     "mult": 1.6
+     "mult": 1.3
     },
     {
      "n": 3,
-     "views": 73,
-     "median": 5,
-     "eng": 2,
-     "eng_rate": 2.7,
-     "likes": 1,
-     "name": "Personal story / confession",
-     "enough": false,
-     "mult": 1.0
-    },
-    {
-     "n": 2,
-     "views": 10,
-     "median": 5.0,
+     "views": 16,
+     "median": 6,
      "eng": 1,
-     "eng_rate": 10.0,
+     "eng_rate": 6.2,
      "likes": 1,
      "name": "Link drop",
      "enough": false,
      "mult": 1.0
     },
     {
-     "n": 6,
-     "views": 22,
-     "median": 3.0,
+     "n": 3,
+     "views": 74,
+     "median": 5,
      "eng": 2,
-     "eng_rate": 9.1,
+     "eng_rate": 2.7,
      "likes": 1,
+     "name": "Personal story / confession",
+     "enough": false,
+     "mult": 0.8
+    },
+    {
+     "n": 14,
+     "views": 684,
+     "median": 4.0,
+     "eng": 5,
+     "eng_rate": 0.7,
+     "likes": 3,
      "name": "Hot take",
      "enough": true,
-     "mult": 0.6
+     "mult": 0.7
     },
     {
      "n": 1,
@@ -283,34 +294,43 @@
      "likes": 0,
      "name": "Question",
      "enough": false,
-     "mult": 0.4
+     "mult": 0.3
     }
    ],
    "targets": [
     {
+     "target": "@suraj_sharma14",
+     "replies": 1,
+     "views": 626,
+     "followers": 31423,
+     "parent_views": 89954,
+     "parent_replies": 37,
+     "capture": 0.7
+    },
+    {
      "target": "@TonyChanBuilds",
      "replies": 2,
-     "views": 73,
-     "followers": 2543,
-     "parent_views": 5155,
+     "views": 74,
+     "followers": 2580,
+     "parent_views": 5196,
      "parent_replies": 71,
      "capture": 1.42
     },
     {
      "target": "@MicroLaunchHQ",
-     "replies": 1,
-     "views": 27,
-     "followers": 11169,
-     "parent_views": 1760,
+     "replies": 2,
+     "views": 33,
+     "followers": 11180,
+     "parent_views": 2734,
      "parent_replies": 35,
-     "capture": 1.53
+     "capture": 1.21
     },
     {
      "target": "@TomasMann1878",
      "replies": 1,
      "views": 10,
-     "followers": 3096,
-     "parent_views": 676,
+     "followers": 3115,
+     "parent_views": 677,
      "parent_replies": 5,
      "capture": 1.48
     },
@@ -318,26 +338,26 @@
      "target": "@Unnati_builds24",
      "replies": 1,
      "views": 9,
-     "followers": 8375,
-     "parent_views": 689,
+     "followers": 8365,
+     "parent_views": 715,
      "parent_replies": 8,
-     "capture": 1.31
+     "capture": 1.26
     },
     {
      "target": "@Nehakathare",
      "replies": 1,
      "views": 7,
-     "followers": 3480,
-     "parent_views": 17814,
-     "parent_replies": 311,
+     "followers": 3602,
+     "parent_views": 17911,
+     "parent_replies": 310,
      "capture": 0.04
     },
     {
      "target": "@anupamrjp",
      "replies": 1,
      "views": 2,
-     "followers": 23592,
-     "parent_views": 3178,
+     "followers": 23596,
+     "parent_views": 3191,
      "parent_replies": 63,
      "capture": 0.06
     },
@@ -345,51 +365,55 @@
      "target": "@BoboLinNotes",
      "replies": 1,
      "views": 2,
-     "followers": 4670,
-     "parent_views": 193,
+     "followers": 4677,
+     "parent_views": 196,
      "parent_replies": 4,
-     "capture": 1.04
+     "capture": 1.02
+    },
+    {
+     "target": "@finnbuilt",
+     "replies": 1,
+     "views": 1,
+     "followers": 2851,
+     "parent_views": 231,
+     "parent_replies": 4,
+     "capture": 0.43
     }
    ],
    "by_day": [
     {
      "label": "Nov 20",
-     "views": 148,
+     "views": 149,
      "posts": 12
     },
     {
      "label": "Nov 21",
-     "views": 19,
+     "views": 21,
      "posts": 5
     },
     {
      "label": "Nov 22",
      "views": 0,
      "posts": 0
+    },
+    {
+     "label": "Nov 23",
+     "views": 666,
+     "posts": 9
     }
    ],
    "by_month": [
     {
      "label": "Nov 2026",
-     "views": 167
+     "views": 836
     }
    ],
    "heat": [
     [
      0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0
-    ],
-    [
-     0,
-     0,
-     0,
-     0,
+     6,
+     654,
+     6,
      0,
      0,
      0,
@@ -418,7 +442,17 @@
     [
      0,
      0,
-     101,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     102,
      20,
      0,
      27,
@@ -430,9 +464,9 @@
      0,
      13,
      0,
-     3,
+     4,
      0,
-     3,
+     4,
      0
     ],
     [
@@ -448,9 +482,17 @@
    ],
    "top": [
     {
+     "id": "2124847190812291350",
+     "label": "@suraj_sharma14 Stage 3 hides one of the hardest parts in on",
+     "views": 626,
+     "type": "Reply",
+     "et": "Nov 23 7:47 AM",
+     "url": "https://x.com/RohnSpringfield/status/2124847190812291350"
+    },
+    {
      "id": "2123750965438497269",
      "label": "Turning 35, #KeepBuilding → @TonyChanBuilds",
-     "views": 65,
+     "views": 66,
      "type": "Reply",
      "et": "Nov 20 7:11 AM",
      "url": "https://x.com/RohnSpringfield/status/2123750965438497269"
@@ -504,31 +546,31 @@
      "url": "https://x.com/RohnSpringfield/status/2123778992084021486"
     },
     {
+     "id": "2124857674193830272",
+     "label": "Stripe tested 14 coding agents on real payment integrations.",
+     "views": 8,
+     "type": "Original",
+     "et": "Nov 23 8:28 AM",
+     "url": "https://x.com/RohnSpringfield/status/2124857674193830272"
+    },
+    {
      "id": "2123751989276500476",
      "label": "\"Pitch\" → @Nehakathare",
      "views": 7,
      "type": "Reply",
      "et": "Nov 20 7:15 AM",
      "url": "https://x.com/RohnSpringfield/status/2123751989276500476"
-    },
-    {
-     "id": "2123743272422068597",
-     "label": "Classic founder mistake (long post)",
-     "views": 5,
-     "type": "Original",
-     "et": "Nov 20 6:40 AM",
-     "url": "https://x.com/RohnSpringfield/status/2123743272422068597"
-    },
-    {
-     "id": "2123747574414741982",
-     "label": "Career hats (long post)",
-     "views": 3,
-     "type": "Original",
-     "et": "Nov 20 6:57 AM",
-     "url": "https://x.com/RohnSpringfield/status/2123747574414741982"
     }
    ],
    "bottom": [
+    {
+     "id": "2124860285995622631",
+     "label": "@finnbuilt Build a product that includes distribution as an ",
+     "views": 1,
+     "type": "Reply",
+     "et": "Nov 23 8:39 AM",
+     "url": "https://x.com/RohnSpringfield/status/2124860285995622631"
+    },
     {
      "id": "2124133304378995148",
      "label": "KPMG just ran 100+ AI agents on a real FTSE 250 audit.\n\nIn p",
@@ -560,14 +602,6 @@
      "type": "Original",
      "et": "Nov 20 7:02 AM",
      "url": "https://x.com/RohnSpringfield/status/2123748933461811448"
-    },
-    {
-     "id": "2124306974338674729",
-     "label": "An always-on agent isn't actually always on.\n\nPer Anthropic'",
-     "views": 3,
-     "type": "Original",
-     "et": "Nov 21 8:00 PM",
-     "url": "https://x.com/RohnSpringfield/status/2124306974338674729"
     }
    ]
   },
@@ -590,6 +624,10 @@
   {
    "label": "Nov 22 9:33 PM",
    "followers": 1
+  },
+  {
+   "label": "Nov 23 9:28 PM",
+   "followers": 1
   }
  ],
  "heat_cols": [
@@ -603,14 +641,14 @@
   "9p–12a"
  ],
  "funnel": {
-  "drafted": 21,
-  "approved": 11,
-  "posted": 5
+  "drafted": 31,
+  "approved": 9,
+  "posted": 9
  },
  "moves": [
-  "Lean on replies: median 8.5 views vs 3 for originals (8 vs 8 posts).",
-  "Pick fresh threads: @TonyChanBuilds, @MicroLaunchHQ passed you ≥1% of parent views; @Nehakathare (311 replies), @anupamrjp (63 replies) passed <0.1%.",
-  "Rebalance pillars: Expert know-how → agents (acumane) is 6% of posts vs a 20% target."
+  "Lean on replies: median 8 views vs 4.5 for originals (11 vs 12 posts).",
+  "Pick fresh threads: @TonyChanBuilds, @MicroLaunchHQ passed you ≥1% of parent views; @Nehakathare (310 replies), @anupamrjp (63 replies) passed <0.1%.",
+  "Rebalance pillars: Expert know-how → agents (acumane) is 8% of posts vs a 20% target."
  ],
  "limits": [
   {
@@ -623,7 +661,7 @@
   },
   {
    "label": "Follower history",
-   "value": "built from refreshes; 4 snapshot(s) so far, X has no history endpoint"
+   "value": "built from refreshes; 5 snapshot(s) so far, X has no history endpoint"
   },
   {
    "label": "Engagement rate",
@@ -635,7 +673,7 @@
   },
   {
    "label": "Classification",
-   "value": "12 of 17 posts hand-classified in classify.json; the rest are keyword guesses"
+   "value": "12 of 26 posts hand-classified in classify.json; the rest are keyword guesses"
   }
  ]
 }
