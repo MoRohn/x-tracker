@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-version="approve-v12">
+<html lang="en" data-version="approve-v13">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -38,6 +38,7 @@ h2{font-size:13px;margin:16px 2px 8px;color:var(--tx2);font-weight:650;text-tran
 .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--tx2);margin-bottom:8px}
 .pill{display:inline-block;background:var(--line);color:var(--tx2);border-radius:99px;padding:2px 9px;font-size:11px;font-weight:650}
 .pill.type{background:rgba(29,155,240,.18);color:#8fcbff}.pill.warn{background:rgba(245,180,0,.16);color:var(--warn)}.pill.ok{background:rgba(54,192,138,.16);color:var(--ok)}
+.pill.retag{background:transparent;border:1px solid var(--line);color:var(--tx3);font-weight:550}
 .meta a{color:var(--tx);text-decoration:none;border-bottom:1px dotted var(--tx3)}
 .text{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14.5px;margin:6px 0}
 .count{font-size:11px;color:var(--tx3);text-align:right}.count.over{color:var(--warn)}
@@ -137,7 +138,7 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const APP_VERSION="approve-v12";
+const APP_VERSION="approve-v13";
 const LS="xt-approvals-key-v1";
 const LD="xt-discarded-v1";
 const LSDONE="xt-sentdone-v1";  // keys confirmed "Sent" on this device: {key:{t,opt}}
@@ -411,7 +412,7 @@ function card(d,i){
     :(STATUS[d.status]||[d.status,""]);
   const me=(DATA&&DATA.me)||{name:"Rohn Springfield",username:"RohnSpringfield"};
   const head=`<div class="meta"><span class="pill type">${esc(d.type)}</span><b>${esc(d.key)}</b><span>· ${esc(slotET(d.slot))}</span>
-      <span class="pill ${st[1]}">${esc(st[0])}</span>${d.pillar?`<span class="pill">${esc(d.pillar)}</span>`:""}${d.type==="reply"&&pms&&isPending(d)?windowBadge(pms):""}</div>`;
+      <span class="pill ${st[1]}">${esc(st[0])}</span>${d.pillar?`<span class="pill">${esc(d.pillar)}</span>`:""}${isPending(d)&&d.replaces?`<span class="pill retag">New angle, replaces a discarded draft</span>`:""}${d.type==="reply"&&pms&&isPending(d)?windowBadge(pms):""}</div>`;
   // parent on top (replies only; quotes embed the parent under the draft, as X does)
   let thread="";
   if(d.type==="reply"){
