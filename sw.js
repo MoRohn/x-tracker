@@ -1,6 +1,6 @@
 // X Tracker service worker. Network-first for everything (HTML, JS, JSON) so updates arrive immediately;
 // the cache is only an offline fallback. Old caches are deleted and a new SW takes over at once.
-const C = "xt-v13";
+const C = "xt-v14";
 const SHELL = ["./", "index.html", "approve/", "approve/index.html", "manifest.webmanifest", "icons/icon-192.png"];
 self.addEventListener("install", e => {
   self.skipWaiting();

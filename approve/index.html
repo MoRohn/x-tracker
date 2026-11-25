@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-version="approve-v13">
+<html lang="en" data-version="approve-v14">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -38,6 +38,9 @@ h2{font-size:13px;margin:16px 2px 8px;color:var(--tx2);font-weight:650;text-tran
 .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--tx2);margin-bottom:8px}
 .pill{display:inline-block;background:var(--line);color:var(--tx2);border-radius:99px;padding:2px 9px;font-size:11px;font-weight:650}
 .pill.type{background:rgba(29,155,240,.18);color:#8fcbff}.pill.warn{background:rgba(245,180,0,.16);color:var(--warn)}.pill.ok{background:rgba(54,192,138,.16);color:var(--ok)}
+.pill.fmt{background:var(--line);color:var(--tx);font-weight:650}
+.why{font-size:12px;color:var(--tx3);margin:2px 0 8px}
+.tpart{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}.tpart .lbl{font-size:11px;color:var(--tx3);display:flex;justify-content:space-between;align-items:center}.tpart .lbl button{padding:4px 10px;font-size:11px}
 .pill.retag{background:transparent;border:1px solid var(--line);color:var(--tx3);font-weight:550}
 .meta a{color:var(--tx);text-decoration:none;border-bottom:1px dotted var(--tx3)}
 .text{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14.5px;margin:6px 0}
@@ -138,7 +141,7 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const APP_VERSION="approve-v13";
+const APP_VERSION="approve-v14";
 const LS="xt-approvals-key-v1";
 const LD="xt-discarded-v1";
 const LSDONE="xt-sentdone-v1";  // keys confirmed "Sent" on this device: {key:{t,opt}}
@@ -399,6 +402,11 @@ function updateLive(){
 }
 setInterval(updateLive,30000);
 
+const FMT={artifact:"Free artifact",launch_quote:"Launch quote",repackage:"Winner, new package",thread:"Thread",reply_back:"Reply-back"};
+const partText=t=>typeof t==="string"?t:((t&&t.text)||"");
+const replyLeft=d=>{if(d.expires_at){const e=Date.parse(d.expires_at);if(!isNaN(e))return e-Date.now();}const p=d.parent&&!d.parent.missing&&!d.parent.unavailable?d.parent:null;const ms=p?pTime(p):(d.parent_id?tsFromId(d.parent_id):null);return ms?2*36e5-(Date.now()-ms):Infinity;};
+function threadParts(d,i){const tp=d.thread_parts||[];if(!tp.length)return "";const N=tp.length+1;
+  return tp.map((t,k)=>`<div class="tpart"><div class="lbl"><span>Part ${k+2} of ${N} · reply to your part ${k+1}</span>${isPending(d)?`<button type="button" data-act="copypart" data-i="${i}" data-p="${k}">Copy</button>`:""}</div><div class="text">${esc(partText(t))}</div><div class="count ${xlen(partText(t))>280?"over":""}">${xlen(partText(t))} / 280</div></div>`).join("")+(isPending(d)?`<div class="hint">Post part 1, then reply to it with each part in order.</div>`:"");}
 function card(d,i){
   const os=opts(d),oi=optIdx(d),txt=curText(d),n=xlen(txt),si=isPending(d)?sentInfo(d.key):null,sentAt=si&&si.t;
   const mk=(d.media&&d.media.length)?(d.media.length===1?d.media[0].kind:(d.media.every(m=>m.kind==="image")?"images":"media")):"";
@@ -412,7 +420,7 @@ function card(d,i){
     :(STATUS[d.status]||[d.status,""]);
   const me=(DATA&&DATA.me)||{name:"Rohn Springfield",username:"RohnSpringfield"};
   const head=`<div class="meta"><span class="pill type">${esc(d.type)}</span><b>${esc(d.key)}</b><span>· ${esc(slotET(d.slot))}</span>
-      <span class="pill ${st[1]}">${esc(st[0])}</span>${d.pillar?`<span class="pill">${esc(d.pillar)}</span>`:""}${isPending(d)&&d.replaces?`<span class="pill retag">New angle, replaces a discarded draft</span>`:""}${d.type==="reply"&&pms&&isPending(d)?windowBadge(pms):""}</div>`;
+      <span class="pill ${st[1]}">${esc(st[0])}</span>${d.pillar?`<span class="pill">${esc(d.pillar)}</span>`:""}${d.format&&FMT[d.format]?`<span class="pill fmt">${esc(FMT[d.format])}</span>`:""}${isPending(d)&&d.replaces?`<span class="pill retag">New angle, replaces a discarded draft</span>`:""}${d.type==="reply"&&pms&&isPending(d)?windowBadge(pms):""}</div>${d.why?`<div class="why">Why: ${esc(d.why)}</div>`:""}`;
   // parent on top (replies only; quotes embed the parent under the draft, as X does)
   let thread="";
   if(d.type==="reply"){
@@ -427,6 +435,7 @@ function card(d,i){
       <div class="text">${esc(txt)}</div>
       <div class="count ${n>280?"over":""}">${n} / 280${n>280?" · long post (Premium)":""}</div>
       ${mediaPreview(d)}
+      ${threadParts(d,i)}
       ${quoted}</div></div>`;
   return `<div class="card" data-key="${esc(d.key)}">${head}${thread}
     ${d.fact_check?`<div class="fc"><b>${d.type==="post"?"Source / fact check":"Fact check"}:</b> ${esc(d.fact_check)}</div>`:""}
@@ -447,8 +456,10 @@ function render(){
   const nP=DRAFTS.filter(isPending).length,nS=DRAFTS.filter(d=>isPending(d)&&keep[d.key]).length;
   $("sub").textContent=`Updated ${DATA.built_et} · ${nP-nS} pending`+(nS?` · ${nS} sent?`:"");
   const pend=DRAFTS.map((d,i)=>[d,i]).filter(([d])=>isPending(d));
-  const groups={};pend.forEach(([d,i])=>{const g=`${d.batch||"Batch"} · ${d.slot==="asap"?"Replies (ASAP)":slotET(d.slot)}`;(groups[g]=groups[g]||[]).push([d,i]);});
-  const order=Object.keys(groups).sort((a,b)=>{const sa=groups[a][0][0].slot,sb=groups[b][0][0].slot;return (sa==="asap"?"":sa).localeCompare(sb==="asap"?"":sb);});
+  const EXP="Expired replies · 2h window passed (discard or skip)";
+  const groups={};pend.forEach(([d,i])=>{const g=d.type==="reply"&&replyLeft(d)<=0?EXP:`${d.batch||"Batch"} · ${d.slot==="asap"?"Replies (ASAP)":slotET(d.slot)}`;(groups[g]=groups[g]||[]).push([d,i]);});
+  Object.values(groups).forEach(a=>a.sort((x,y)=>(x[0].type==="reply"&&y[0].type==="reply")?replyLeft(x[0])-replyLeft(y[0]):0));
+  const order=Object.keys(groups).sort((a,b)=>{if(a===EXP)return 1;if(b===EXP)return -1;const sa=groups[a][0][0].slot,sb=groups[b][0][0].slot;return (sa==="asap"?"":sa).localeCompare(sb==="asap"?"":sb);});
   const uns=unsyncedItems(), nUn=uns.discards.length+uns.sents.length;
   const emptyPend=uns.discards.length?`<div class="card">Nothing pending. ${uns.discards.length} draft${uns.discards.length===1?"":"s"} ${uns.discards.length===1?"is":"are"} in History as discarded on this device and not synced yet. Restore any you still want, or tap Sync to apply the discards everywhere.</div>`:`<div class="card">Nothing pending. New drafts appear here after each batch.</div>`;
   $("pending").innerHTML=order.length?order.map(g=>`<h2>${esc(g)}</h2>`+groups[g].map(([d,i])=>card(d,i)).join("")).join(""):emptyPend;
@@ -525,6 +536,9 @@ function discard(i){
   scheduleFlush();
 }
 function restore(i){const d=DRAFTS[i]; if(!d) return; dequeue(d.key); clearResolved(d.key); setLD(getLD().filter(k=>k!==d.key)); render(); updateSyncBtn(); toast(`Restored ${d.key}.`);}
+async function copyPart(i,k){const d=DRAFTS[i];if(!d||!d.thread_parts)return;const t=partText(d.thread_parts[k]);
+  try{await navigator.clipboard.writeText(t);}catch(e){const ta=document.createElement("textarea");ta.value=t;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,t.length);document.execCommand("copy");ta.remove();}
+  toast(`Copied part ${k+2}`);}
 async function copy(i){const t=curText(DRAFTS[i]);
   try{await navigator.clipboard.writeText(t);}catch(e){const ta=document.createElement("textarea");ta.value=t;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,t.length);document.execCommand("copy");ta.remove();}
   toast("Copied");}
@@ -561,7 +575,7 @@ function unsent(i){const d=DRAFTS[i]; if(!d) return; const o=getSent(); delete o
 $("app").addEventListener("click",e=>{
   const b=e.target.closest("[data-act]"); if(!b) return;
   e.preventDefault(); const i=+b.dataset.i;
-  if(b.dataset.act==="discard")discard(i); else if(b.dataset.act==="restore")restore(i); else if(b.dataset.act==="copy")copy(i); else if(b.dataset.act==="unsent")unsent(i); else if(b.dataset.act==="save")saveMedia(i); else if(b.dataset.act==="next")nextOpt(i); else if(b.dataset.act==="undosent")undoSent(i); else if(b.dataset.act==="sentdone")markSent(i,b.closest(".card"));
+  if(b.dataset.act==="discard")discard(i); else if(b.dataset.act==="restore")restore(i); else if(b.dataset.act==="copy")copy(i); else if(b.dataset.act==="copypart")copyPart(i,+b.dataset.p); else if(b.dataset.act==="unsent")unsent(i); else if(b.dataset.act==="save")saveMedia(i); else if(b.dataset.act==="next")nextOpt(i); else if(b.dataset.act==="undosent")undoSent(i); else if(b.dataset.act==="sentdone")markSent(i,b.closest(".card"));
 });
 
 // Cross-device: read discard/sent issues (title + author + key-only body) from the GitHub API.

@@ -1,7 +1,7 @@
 {
- "published_et": "Nov 24, 9:49 PM ET",
- "generated_at": "2026-11-25T02:35:43.915948+00:00",
- "generated_et": "Nov 24, 9:35 PM ET",
+ "published_et": "Nov 25, 6:13 AM ET",
+ "generated_at": "2026-11-25T11:13:25.249619+00:00",
+ "generated_et": "Nov 25, 6:13 AM ET",
  "handle": "RohnSpringfield",
  "since_et": "Nov 20, 2026",
  "snapshots": 6,
@@ -38,7 +38,7 @@
   },
   "top": {
    "id": "2124847190812291350",
-   "label": "@suraj_sharma14 Stage 3 hides one of the hardest parts in on",
+   "label": "Reconciliation: two systems disagree → @suraj_sharma14",
    "views": 810,
    "type": "Reply",
    "et": "Nov 23 7:47 AM",
@@ -174,26 +174,37 @@
    },
    "pillars": [
     {
-     "n": 10,
-     "views": 106,
-     "median": 9.5,
-     "eng": 5,
-     "eng_rate": 4.7,
-     "likes": 2,
+     "n": 9,
+     "views": 116,
+     "median": 9,
+     "eng": 6,
+     "eng_rate": 5.2,
+     "likes": 3,
      "name": "AI building in practice",
-     "target": 35,
-     "share": 31
+     "target": 40,
+     "share": 28
     },
     {
-     "n": 5,
-     "views": 28,
-     "median": 4,
-     "eng": 0,
-     "eng_rate": 0.0,
-     "likes": 0,
+     "n": 6,
+     "views": 838,
+     "median": 6.0,
+     "eng": 2,
+     "eng_rate": 0.2,
+     "likes": 1,
      "name": "Data/systems lessons",
-     "target": 25,
-     "share": 16
+     "target": 30,
+     "share": 19
+    },
+    {
+     "n": 2,
+     "views": 26,
+     "median": 13.0,
+     "eng": 1,
+     "eng_rate": 3.8,
+     "likes": 0,
+     "name": "Open source & tools",
+     "target": 20,
+     "share": 6
     },
     {
      "n": 2,
@@ -203,53 +214,42 @@
      "eng_rate": 9.1,
      "likes": 1,
      "name": "Expert know-how → agents (acumane)",
-     "target": 20,
+     "target": 10,
      "share": 6
-    },
-    {
-     "n": 15,
-     "views": 1023,
-     "median": 7,
-     "eng": 11,
-     "eng_rate": 1.1,
-     "likes": 6,
-     "name": "Founder life / BLERBZ",
-     "target": 20,
-     "share": 47
     }
    ],
    "hooks": [
     {
-     "n": 2,
-     "views": 35,
-     "median": 17.5,
+     "n": 1,
+     "views": 36,
+     "median": 36,
      "eng": 2,
-     "eng_rate": 5.7,
+     "eng_rate": 5.6,
      "likes": 1,
-     "name": "Proof / showcase",
+     "name": "News + takeaway",
      "enough": false,
-     "mult": 2.3
-    },
-    {
-     "n": 3,
-     "views": 51,
-     "median": 10,
-     "eng": 2,
-     "eng_rate": 3.9,
-     "likes": 1,
-     "name": "One-line answer",
-     "enough": false,
-     "mult": 1.3
+     "mult": 4.8
     },
     {
      "n": 4,
-     "views": 41,
-     "median": 9.5,
+     "views": 75,
+     "median": 20.0,
      "eng": 3,
-     "eng_rate": 7.3,
-     "likes": 2,
-     "name": "Link drop",
+     "eng_rate": 4.0,
+     "likes": 1,
+     "name": "Proof / showcase",
      "enough": false,
+     "mult": 2.7
+    },
+    {
+     "n": 5,
+     "views": 867,
+     "median": 10,
+     "eng": 5,
+     "eng_rate": 0.6,
+     "likes": 3,
+     "name": "One-line answer",
+     "enough": true,
      "mult": 1.3
     },
     {
@@ -264,26 +264,37 @@
      "mult": 1.1
     },
     {
-     "n": 18,
-     "views": 957,
-     "median": 6.0,
-     "eng": 8,
-     "eng_rate": 0.8,
-     "likes": 4,
-     "name": "Hot take",
-     "enough": true,
-     "mult": 0.8
+     "n": 3,
+     "views": 21,
+     "median": 8,
+     "eng": 1,
+     "eng_rate": 4.8,
+     "likes": 1,
+     "name": "Link drop",
+     "enough": false,
+     "mult": 1.1
     },
     {
-     "n": 3,
-     "views": 74,
-     "median": 5,
+     "n": 4,
+     "views": 80,
+     "median": 5.5,
      "eng": 2,
-     "eng_rate": 2.7,
+     "eng_rate": 2.5,
      "likes": 1,
      "name": "Personal story / confession",
      "enough": false,
      "mult": 0.7
+    },
+    {
+     "n": 13,
+     "views": 79,
+     "median": 4,
+     "eng": 4,
+     "eng_rate": 5.1,
+     "likes": 2,
+     "name": "Hot take",
+     "enough": true,
+     "mult": 0.5
     },
     {
      "n": 1,
@@ -423,6 +434,11 @@
      "label": "Nov 24",
      "views": 136,
      "posts": 6
+    },
+    {
+     "label": "Nov 25",
+     "views": 0,
+     "posts": 0
     }
    ],
    "by_month": [
@@ -506,7 +522,7 @@
    "top": [
     {
      "id": "2124847190812291350",
-     "label": "@suraj_sharma14 Stage 3 hides one of the hardest parts in on",
+     "label": "Reconciliation: two systems disagree → @suraj_sharma14",
      "views": 810,
      "type": "Reply",
      "et": "Nov 23 7:47 AM",
@@ -522,7 +538,7 @@
     },
     {
      "id": "2125214232639914398",
-     "label": "@brianmcgrath And considered versioning them as a combo. Art",
+     "label": "Harness matters (Artificial Analysis) → @brianmcgrath",
      "views": 36,
      "type": "Reply",
      "et": "Nov 24 8:05 AM",
@@ -530,7 +546,7 @@
     },
     {
      "id": "2125214423010680966",
-     "label": "@ChezluiCJar @dbswesthlm 😂 love this",
+     "label": "😂 love this → @ChezluiCJar",
      "views": 34,
      "type": "Reply",
      "et": "Nov 24 8:06 AM",
@@ -546,7 +562,7 @@
     },
     {
      "id": "2125309027001540938",
-     "label": "Same model. Same tasks.\n\nGPT-6 Luna used 5.6M tokens per tas",
+     "label": "Same model, 5.6M vs 27M tokens: harness (chart)",
      "views": 25,
      "type": "Original",
      "et": "Nov 24 2:22 PM",
@@ -554,7 +570,7 @@
     },
     {
      "id": "2125210279835562370",
-     "label": "C’mon Tom, you just nailed it.\n\n@AnthropicAI where you at, t",
+     "label": "C'mon Tom (quote, @AnthropicAI jab)",
      "views": 20,
      "type": "Quote",
      "et": "Nov 24 7:49 AM",
@@ -562,7 +578,7 @@
     },
     {
      "id": "2125214893699678321",
-     "label": "Your agent pays for every connected MCP tool on every turn. ",
+     "label": "MCP tool defs cost tokens every turn (Notion 17,161)",
      "views": 15,
      "type": "Original",
      "et": "Nov 24 8:08 AM",
@@ -570,7 +586,7 @@
     },
     {
      "id": "2124869666812158171",
-     "label": "Great news for Open Source AI and inevitably humanity itself",
+     "label": "Great news for open-source AI (quote)",
      "views": 11,
      "type": "Quote",
      "et": "Nov 23 9:16 AM",
@@ -588,7 +604,7 @@
    "bottom": [
     {
      "id": "2124860285995622631",
-     "label": "@finnbuilt Build a product that includes distribution as an ",
+     "label": "Distribution as a feature → @finnbuilt",
      "views": 1,
      "type": "Reply",
      "et": "Nov 23 8:39 AM",
@@ -669,13 +685,13 @@
  ],
  "funnel": {
   "drafted": 44,
-  "approved": 10,
-  "posted": 10
+  "approved": 13,
+  "posted": 13
  },
  "moves": [
-  "Lean on replies: median 9 views vs 6 for originals (13 vs 15 posts).",
-  "Pick fresh threads: @TonyChanBuilds, @brianmcgrath passed you ≥1% of parent views; @Nehakathare (310 replies), @anupamrjp (63 replies) passed <0.1%.",
-  "Rebalance pillars: Expert know-how → agents (acumane) is 6% of posts vs a 20% target."
+  "Reply where attention already is: replies on 100K+-view parents got a median 810 views vs 9 on <2K parents. Scout with reply_targets.py.",
+  "Ride the winner: 'Reconciliation: two systems disagree → @suraj_sharma14' did 810 views (90x its type median). Next package: standalone original: same insight, plain problem-first hook.",
+  "Lean on replies: median 9 views vs 6 for originals (13 vs 15 posts)."
  ],
  "limits": [
   {
@@ -700,7 +716,7 @@
   },
   {
    "label": "Classification",
-   "value": "12 of 32 posts hand-classified in classify.json; the rest are keyword guesses"
+   "value": "23 of 32 posts hand-classified in classify.json; the rest are keyword guesses"
   }
  ]
 }
