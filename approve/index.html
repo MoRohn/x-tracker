@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-version="approve-v14">
+<html lang="en" data-version="approve-v15">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -141,7 +141,7 @@ button.discard{background:transparent;border:1px solid var(--line);color:var(--t
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const APP_VERSION="approve-v14";
+const APP_VERSION="approve-v15";
 const LS="xt-approvals-key-v1";
 const LD="xt-discarded-v1";
 const LSDONE="xt-sentdone-v1";  // keys confirmed "Sent" on this device: {key:{t,opt}}
@@ -379,7 +379,7 @@ async function flushSync({manual=false}={}){
     if(flushAgain){flushAgain=false;scheduleFlush();}
   }
 }
-const STATUS={drafted:["Drafted · needs your OK",""],approved:["Approved · awaiting your tap","ok"],posted:["Posted","ok"],discarded:["Discarded",""]};
+const STATUS={drafted:["Drafted · needs your OK",""],approved:["Approved · awaiting your tap","ok"],posted:["Posted","ok"],discarded:["Discarded",""],expired:["Expired",""]};
 
 const nf=n=>n==null?"—":n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M":n>=1e4?Math.round(n/1e3)+"K":n>=1e3?(n/1e3).toFixed(1).replace(/\.0$/,"")+"K":String(n);
 function ageStr(ms){const m=Math.max(0,Math.round((Date.now()-ms)/6e4));if(m<60)return `${m}m ago`;const h=Math.floor(m/60);if(h<24)return `${h}h ${m%60}m ago`;const d=Math.floor(h/24);return `${d}d ${h%24}h ago`;}
@@ -407,6 +407,12 @@ const partText=t=>typeof t==="string"?t:((t&&t.text)||"");
 const replyLeft=d=>{if(d.expires_at){const e=Date.parse(d.expires_at);if(!isNaN(e))return e-Date.now();}const p=d.parent&&!d.parent.missing&&!d.parent.unavailable?d.parent:null;const ms=p?pTime(p):(d.parent_id?tsFromId(d.parent_id):null);return ms?2*36e5-(Date.now()-ms):Infinity;};
 function threadParts(d,i){const tp=d.thread_parts||[];if(!tp.length)return "";const N=tp.length+1;
   return tp.map((t,k)=>`<div class="tpart"><div class="lbl"><span>Part ${k+2} of ${N} · reply to your part ${k+1}</span>${isPending(d)?`<button type="button" data-act="copypart" data-i="${i}" data-p="${k}">Copy</button>`:""}</div><div class="text">${esc(partText(t))}</div><div class="count ${xlen(partText(t))>280?"over":""}">${xlen(partText(t))} / 280</div></div>`).join("")+(isPending(d)?`<div class="hint">Post part 1, then reply to it with each part in order.</div>`:"");}
+function replacesPill(d){
+  if(!isPending(d)||!d.replaces) return "";
+  const fresh=d.replaces_kind==="expired"||((d.type==="reply"||d.format==="reply_back"||d.format==="launch_quote")&&d.replaces_kind!=="discarded");
+  const label=fresh?"Fresh reply, replaces a missed one":"New angle, replaces a discarded draft";
+  return `<span class="pill retag">${esc(label)}</span>`;
+}
 function card(d,i){
   const os=opts(d),oi=optIdx(d),txt=curText(d),n=xlen(txt),si=isPending(d)?sentInfo(d.key):null,sentAt=si&&si.t;
   const mk=(d.media&&d.media.length)?(d.media.length===1?d.media[0].kind:(d.media.every(m=>m.kind==="image")?"images":"media")):"";
@@ -420,7 +426,7 @@ function card(d,i){
     :(STATUS[d.status]||[d.status,""]);
   const me=(DATA&&DATA.me)||{name:"Rohn Springfield",username:"RohnSpringfield"};
   const head=`<div class="meta"><span class="pill type">${esc(d.type)}</span><b>${esc(d.key)}</b><span>· ${esc(slotET(d.slot))}</span>
-      <span class="pill ${st[1]}">${esc(st[0])}</span>${d.pillar?`<span class="pill">${esc(d.pillar)}</span>`:""}${d.format&&FMT[d.format]?`<span class="pill fmt">${esc(FMT[d.format])}</span>`:""}${isPending(d)&&d.replaces?`<span class="pill retag">New angle, replaces a discarded draft</span>`:""}${d.type==="reply"&&pms&&isPending(d)?windowBadge(pms):""}</div>${d.why?`<div class="why">Why: ${esc(d.why)}</div>`:""}`;
+      <span class="pill ${st[1]}">${esc(st[0])}</span>${d.pillar?`<span class="pill">${esc(d.pillar)}</span>`:""}${d.format&&FMT[d.format]?`<span class="pill fmt">${esc(FMT[d.format])}</span>`:""}${replacesPill(d)}${d.type==="reply"&&pms&&isPending(d)?windowBadge(pms):""}</div>${d.why?`<div class="why">Why: ${esc(d.why)}</div>`:""}`;
   // parent on top (replies only; quotes embed the parent under the draft, as X does)
   let thread="";
   if(d.type==="reply"){
