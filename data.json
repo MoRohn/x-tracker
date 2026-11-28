@@ -1,25 +1,25 @@
 {
- "published_et": "Nov 27, 5:05 PM ET",
- "generated_at": "2026-11-27T02:33:30.383459+00:00",
- "generated_et": "Nov 26, 9:33 PM ET",
+ "published_et": "Nov 27, 9:37 PM ET",
+ "generated_at": "2026-11-28T02:36:35.542016+00:00",
+ "generated_et": "Nov 27, 9:36 PM ET",
  "handle": "RohnSpringfield",
  "since_et": "Nov 20, 2026",
- "snapshots": 8,
- "delta_since": "Nov 25 9:28 PM",
+ "snapshots": 9,
+ "delta_since": "Nov 26 9:33 PM",
  "min_n": 5,
  "kpi": {
   "views": {
-   "value": 1344,
-   "delta": 60
+   "value": 1472,
+   "delta": 128
   },
   "posts": {
-   "value": 37,
+   "value": 41,
    "split": {
-    "Original": 18,
+    "Original": 21,
     "Reply": 13,
-    "Quote": 6
+    "Quote": 7
    },
-   "delta": 1
+   "delta": 4
   },
   "followers": {
    "value": 9,
@@ -28,18 +28,18 @@
    "delta": 0
   },
   "median": {
-   "value": 8,
-   "delta": 0
+   "value": 9,
+   "delta": 1
   },
   "eng_rate": {
-   "value": 1.6,
-   "eng": 22,
-   "delta": -0.1
+   "value": 1.7,
+   "eng": 25,
+   "delta": 0.1
   },
   "top": {
    "id": "2124847190812291350",
    "label": "Reconciliation: two systems disagree → @suraj_sharma14",
-   "views": 822,
+   "views": 825,
    "type": "Reply",
    "et": "Nov 23 7:47 AM",
    "url": "https://x.com/RohnSpringfield/status/2124847190812291350"
@@ -48,83 +48,94 @@
  "windows": {
   "all": {
    "stats": {
-    "n": 37,
-    "views": 1344,
-    "median": 8,
-    "eng": 22,
-    "eng_rate": 1.6,
-    "likes": 12
+    "n": 41,
+    "views": 1472,
+    "median": 9,
+    "eng": 25,
+    "eng_rate": 1.7,
+    "likes": 14
    },
-   "median_all": 8,
-   "days_active": 5,
+   "median_all": 9,
+   "days_active": 7,
    "types": [
     {
-     "n": 18,
-     "views": 171,
-     "median": 7.0,
-     "eng": 4,
-     "eng_rate": 2.3,
-     "likes": 2,
+     "n": 21,
+     "views": 237,
+     "median": 8,
+     "eng": 7,
+     "eng_rate": 3.0,
+     "likes": 4,
      "name": "Original",
      "enough": true,
      "mult": 0.9
     },
     {
      "n": 13,
-     "views": 1115,
+     "views": 1133,
      "median": 10,
      "eng": 14,
-     "eng_rate": 1.3,
+     "eng_rate": 1.2,
      "likes": 8,
      "name": "Reply",
      "enough": true,
-     "mult": 1.2
+     "mult": 1.1
     },
     {
-     "n": 6,
-     "views": 58,
-     "median": 7.5,
+     "n": 7,
+     "views": 102,
+     "median": 11,
      "eng": 4,
-     "eng_rate": 6.9,
+     "eng_rate": 3.9,
      "likes": 2,
      "name": "Quote",
      "enough": true,
-     "mult": 0.9
+     "mult": 1.2
     }
    ],
    "formats": [
     {
-     "n": 4,
-     "views": 59,
-     "median": 10.5,
+     "n": 5,
+     "views": 73,
+     "median": 12,
      "eng": 0,
      "eng_rate": 0.0,
      "likes": 0,
      "name": "Image",
-     "enough": false,
+     "enough": true,
      "mult": 1.3
     },
     {
-     "n": 13,
-     "views": 1115,
-     "median": 10,
-     "eng": 14,
-     "eng_rate": 1.3,
-     "likes": 8,
-     "name": "Reply",
+     "n": 7,
+     "views": 102,
+     "median": 11,
+     "eng": 4,
+     "eng_rate": 3.9,
+     "likes": 2,
+     "name": "Quote",
      "enough": true,
      "mult": 1.2
     },
     {
-     "n": 6,
-     "views": 58,
-     "median": 7.5,
-     "eng": 4,
-     "eng_rate": 6.9,
-     "likes": 2,
-     "name": "Quote",
+     "n": 13,
+     "views": 1133,
+     "median": 10,
+     "eng": 14,
+     "eng_rate": 1.2,
+     "likes": 8,
+     "name": "Reply",
      "enough": true,
-     "mult": 0.9
+     "mult": 1.1
+    },
+    {
+     "n": 15,
+     "views": 157,
+     "median": 7,
+     "eng": 7,
+     "eng_rate": 4.5,
+     "likes": 4,
+     "name": "Plain text",
+     "enough": true,
+     "mult": 0.8
     },
     {
      "n": 1,
@@ -135,76 +146,75 @@
      "likes": 0,
      "name": "Video",
      "enough": false,
-     "mult": 0.9
-    },
-    {
-     "n": 13,
-     "views": 105,
-     "median": 6,
-     "eng": 4,
-     "eng_rate": 3.8,
-     "likes": 2,
-     "name": "Plain text",
-     "enough": true,
      "mult": 0.8
     }
    ],
    "best_format": {
-    "n": 13,
-    "views": 1115,
-    "median": 10,
-    "eng": 14,
-    "eng_rate": 1.3,
-    "likes": 8,
-    "name": "Reply",
+    "n": 5,
+    "views": 73,
+    "median": 12,
+    "eng": 0,
+    "eng_rate": 0.0,
+    "likes": 0,
+    "name": "Image",
     "enough": true,
-    "mult": 1.2
+    "mult": 1.3
    },
-   "best_hour": null,
+   "best_hour": {
+    "n": 6,
+    "views": 100,
+    "median": 15.0,
+    "eng": 6,
+    "eng_rate": 6.0,
+    "likes": 4,
+    "name": "6 AM",
+    "enough": true,
+    "mult": 1.7
+   },
    "hour_most_posts": {
-    "n": 13,
-    "views": 969,
-    "median": 7,
+    "n": 14,
+    "views": 985,
+    "median": 7.5,
     "eng": 9,
     "eng_rate": 0.9,
     "likes": 5,
     "name": "7 AM",
     "enough": true,
-    "mult": 0.9
+    "mult": 0.8
    },
    "pillars": [
     {
-     "n": 12,
-     "views": 153,
-     "median": 8.5,
+     "n": 13,
+     "views": 169,
+     "median": 12,
      "eng": 8,
-     "eng_rate": 5.2,
+     "eng_rate": 4.7,
      "likes": 4,
      "name": "AI building in practice",
      "target": 40,
      "share": 32
     },
     {
-     "n": 6,
-     "views": 851,
-     "median": 6.5,
+     "n": 7,
+     "views": 898,
+     "median": 8,
      "eng": 2,
      "eng_rate": 0.2,
      "likes": 1,
      "name": "Data/systems lessons",
      "target": 30,
-     "share": 16
+     "share": 17
     },
     {
-     "n": 3,
-     "views": 45,
-     "median": 17,
-     "eng": 1,
-     "eng_rate": 2.2,
-     "likes": 0,
+     "n": 5,
+     "views": 92,
+     "median": 18,
+     "eng": 4,
+     "eng_rate": 4.3,
+     "likes": 2,
      "name": "Open source & tools",
      "target": 20,
-     "share": 8
+     "share": 12
     },
     {
      "n": 2,
@@ -228,34 +238,56 @@
      "likes": 1,
      "name": "News + takeaway",
      "enough": false,
-     "mult": 4.5
+     "mult": 4.0
     },
     {
      "n": 4,
-     "views": 85,
-     "median": 22.0,
+     "views": 86,
+     "median": 22.5,
      "eng": 3,
      "eng_rate": 3.5,
      "likes": 1,
      "name": "Proof / showcase",
      "enough": false,
-     "mult": 2.8
+     "mult": 2.5
+    },
+    {
+     "n": 2,
+     "views": 45,
+     "median": 22.5,
+     "eng": 3,
+     "eng_rate": 6.7,
+     "likes": 2,
+     "name": "Problem-first",
+     "enough": false,
+     "mult": 2.5
+    },
+    {
+     "n": 1,
+     "views": 12,
+     "median": 12,
+     "eng": 0,
+     "eng_rate": 0.0,
+     "likes": 0,
+     "name": "Data point",
+     "enough": false,
+     "mult": 1.3
     },
     {
      "n": 5,
-     "views": 963,
+     "views": 979,
      "median": 10,
      "eng": 5,
      "eng_rate": 0.5,
      "likes": 3,
      "name": "One-line answer",
      "enough": true,
-     "mult": 1.2
+     "mult": 1.1
     },
     {
      "n": 1,
-     "views": 8,
-     "median": 8,
+     "views": 9,
+     "median": 9,
      "eng": 0,
      "eng_rate": 0.0,
      "likes": 0,
@@ -272,12 +304,12 @@
      "likes": 1,
      "name": "Link drop",
      "enough": false,
-     "mult": 1.0
+     "mult": 0.9
     },
     {
      "n": 4,
-     "views": 83,
-     "median": 6.5,
+     "views": 84,
+     "median": 7.0,
      "eng": 2,
      "eng_rate": 2.4,
      "likes": 1,
@@ -286,11 +318,11 @@
      "mult": 0.8
     },
     {
-     "n": 16,
-     "views": 125,
-     "median": 5.0,
+     "n": 17,
+     "views": 174,
+     "median": 5,
      "eng": 6,
-     "eng_rate": 4.8,
+     "eng_rate": 3.4,
      "likes": 3,
      "name": "Hot take",
      "enough": true,
@@ -298,10 +330,10 @@
     },
     {
      "n": 3,
-     "views": 23,
+     "views": 26,
      "median": 2,
      "eng": 3,
-     "eng_rate": 13.0,
+     "eng_rate": 11.5,
      "likes": 2,
      "name": "Question",
      "enough": false,
@@ -312,27 +344,27 @@
     {
      "target": "@suraj_sharma14",
      "replies": 1,
-     "views": 822,
-     "followers": 32037,
-     "parent_views": 211986,
+     "views": 825,
+     "followers": 32164,
+     "parent_views": 213105,
      "parent_replies": 44,
      "capture": 0.39
     },
     {
      "target": "@ChezluiCJar",
      "replies": 1,
-     "views": 117,
-     "followers": 2001,
-     "parent_views": 497,
+     "views": 130,
+     "followers": 1997,
+     "parent_views": 506,
      "parent_replies": 1,
-     "capture": 23.54
+     "capture": 25.69
     },
     {
      "target": "@TonyChanBuilds",
      "replies": 2,
      "views": 74,
-     "followers": 2983,
-     "parent_views": 5255,
+     "followers": 2994,
+     "parent_views": 5265,
      "parent_replies": 71,
      "capture": 1.41
     },
@@ -340,7 +372,7 @@
      "target": "@brianmcgrath",
      "replies": 1,
      "views": 36,
-     "followers": 8850,
+     "followers": 8856,
      "parent_views": 195,
      "parent_replies": 3,
      "capture": 18.46
@@ -349,35 +381,35 @@
      "target": "@MicroLaunchHQ",
      "replies": 2,
      "views": 34,
-     "followers": 11194,
-     "parent_views": 2876,
+     "followers": 11199,
+     "parent_views": 2880,
      "parent_replies": 35,
      "capture": 1.18
+    },
+    {
+     "target": "@Unnati_builds24",
+     "replies": 1,
+     "views": 12,
+     "followers": 8567,
+     "parent_views": 758,
+     "parent_replies": 8,
+     "capture": 1.58
     },
     {
      "target": "@TomasMann1878",
      "replies": 1,
      "views": 10,
-     "followers": 3246,
+     "followers": 3256,
      "parent_views": 679,
      "parent_replies": 5,
      "capture": 1.47
     },
     {
-     "target": "@Unnati_builds24",
-     "replies": 1,
-     "views": 10,
-     "followers": 8516,
-     "parent_views": 753,
-     "parent_replies": 8,
-     "capture": 1.33
-    },
-    {
      "target": "@Nehakathare",
      "replies": 1,
      "views": 7,
-     "followers": 3735,
-     "parent_views": 18085,
+     "followers": 3873,
+     "parent_views": 18106,
      "parent_replies": 310,
      "capture": 0.04
     },
@@ -385,8 +417,8 @@
      "target": "@anupamrjp",
      "replies": 1,
      "views": 2,
-     "followers": 23628,
-     "parent_views": 3206,
+     "followers": 23656,
+     "parent_views": 3211,
      "parent_replies": 63,
      "capture": 0.06
     },
@@ -394,8 +426,8 @@
      "target": "@BoboLinNotes",
      "replies": 1,
      "views": 2,
-     "followers": 4843,
-     "parent_views": 202,
+     "followers": 4872,
+     "parent_views": 203,
      "parent_replies": 4,
      "capture": 0.99
     },
@@ -403,8 +435,8 @@
      "target": "@finnbuilt",
      "replies": 1,
      "views": 1,
-     "followers": 3002,
-     "parent_views": 249,
+     "followers": 2995,
+     "parent_views": 250,
      "parent_replies": 5,
      "capture": 0.4
     }
@@ -412,12 +444,12 @@
    "by_day": [
     {
      "label": "Nov 20",
-     "views": 152,
+     "views": 153,
      "posts": 12
     },
     {
      "label": "Nov 21",
-     "views": 22,
+     "views": 24,
      "posts": 5
     },
     {
@@ -427,36 +459,41 @@
     },
     {
      "label": "Nov 23",
-     "views": 879,
+     "views": 884,
      "posts": 9
     },
     {
      "label": "Nov 24",
-     "views": 230,
+     "views": 245,
      "posts": 6
     },
     {
      "label": "Nov 25",
-     "views": 61,
+     "views": 65,
      "posts": 5
     },
     {
      "label": "Nov 26",
-     "views": 0,
-     "posts": 0
+     "views": 44,
+     "posts": 1
+    },
+    {
+     "label": "Nov 27",
+     "views": 57,
+     "posts": 3
     }
    ],
    "by_month": [
     {
      "label": "Nov 2026",
-     "views": 1344
+     "views": 1472
     }
    ],
    "heat": [
     [
      0,
      8,
-     860,
+     865,
      11,
      0,
      0,
@@ -466,7 +503,7 @@
     [
      0,
      0,
-     197,
+     212,
      0,
      33,
      0,
@@ -476,7 +513,7 @@
     [
      0,
      24,
-     37,
+     41,
      0,
      0,
      0,
@@ -491,12 +528,12 @@
      0,
      0,
      0,
-     0
+     44
     ],
     [
      0,
      0,
-     105,
+     163,
      20,
      0,
      27,
@@ -506,7 +543,7 @@
     [
      0,
      0,
-     14,
+     16,
      0,
      4,
      0,
@@ -528,7 +565,7 @@
     {
      "id": "2124847190812291350",
      "label": "Reconciliation: two systems disagree → @suraj_sharma14",
-     "views": 822,
+     "views": 825,
      "type": "Reply",
      "et": "Nov 23 7:47 AM",
      "url": "https://x.com/RohnSpringfield/status/2124847190812291350"
@@ -536,7 +573,7 @@
     {
      "id": "2125214423010680966",
      "label": "😂 love this → @ChezluiCJar",
-     "views": 117,
+     "views": 130,
      "type": "Reply",
      "et": "Nov 24 8:06 AM",
      "url": "https://x.com/RohnSpringfield/status/2125214423010680966"
@@ -550,12 +587,28 @@
      "url": "https://x.com/RohnSpringfield/status/2123750965438497269"
     },
     {
+     "id": "2126143332359225579",
+     "label": "Today's innovation is tomorrow's legacy (SAP/IBM quote)",
+     "views": 44,
+     "type": "Quote",
+     "et": "Nov 26 9:37 PM",
+     "url": "https://x.com/RohnSpringfield/status/2126143332359225579"
+    },
+    {
      "id": "2125214232639914398",
      "label": "Harness matters (Artificial Analysis) → @brianmcgrath",
      "views": 36,
      "type": "Reply",
      "et": "Nov 24 8:05 AM",
      "url": "https://x.com/RohnSpringfield/status/2125214232639914398"
+    },
+    {
+     "id": "2126274493609889979",
+     "label": "gBench: evals on your own hardware",
+     "views": 36,
+     "type": "Original",
+     "et": "Nov 27 6:18 AM",
+     "url": "https://x.com/RohnSpringfield/status/2126274493609889979"
     },
     {
      "id": "2125309027001540938",
@@ -574,36 +627,20 @@
      "url": "https://x.com/RohnSpringfield/status/2123871792963944840"
     },
     {
+     "id": "2125547626720342156",
+     "label": "Looking for AI builders to follow (ask)",
+     "views": 23,
+     "type": "Original",
+     "et": "Nov 25 6:10 AM",
+     "url": "https://x.com/RohnSpringfield/status/2125547626720342156"
+    },
+    {
      "id": "2125210279835562370",
      "label": "C'mon Tom (quote, @AnthropicAI jab)",
      "views": 21,
      "type": "Quote",
      "et": "Nov 24 7:49 AM",
      "url": "https://x.com/RohnSpringfield/status/2125210279835562370"
-    },
-    {
-     "id": "2125547626720342156",
-     "label": "Looking for AI builders to follow (ask)",
-     "views": 20,
-     "type": "Original",
-     "et": "Nov 25 6:10 AM",
-     "url": "https://x.com/RohnSpringfield/status/2125547626720342156"
-    },
-    {
-     "id": "2125518113894515135",
-     "label": "Civilization is building neurons (quote)",
-     "views": 18,
-     "type": "Quote",
-     "et": "Nov 25 4:13 AM",
-     "url": "https://x.com/RohnSpringfield/status/2125518113894515135"
-    },
-    {
-     "id": "2125214893699678321",
-     "label": "MCP tool defs cost tokens every turn (Notion 17,161)",
-     "views": 17,
-     "type": "Original",
-     "et": "Nov 24 8:08 AM",
-     "url": "https://x.com/RohnSpringfield/status/2125214893699678321"
     }
    ],
    "bottom": [
@@ -649,7 +686,584 @@
     }
    ]
   },
-  "7d": "all",
+  "7d": {
+   "stats": {
+    "n": 29,
+    "views": 1319,
+    "median": 11,
+    "eng": 20,
+    "eng_rate": 1.5,
+    "likes": 11
+   },
+   "median_all": 11,
+   "days_active": 6,
+   "types": [
+    {
+     "n": 15,
+     "views": 204,
+     "median": 10,
+     "eng": 7,
+     "eng_rate": 3.4,
+     "likes": 4,
+     "name": "Original",
+     "enough": true,
+     "mult": 0.9
+    },
+    {
+     "n": 7,
+     "views": 1013,
+     "median": 12,
+     "eng": 9,
+     "eng_rate": 0.9,
+     "likes": 5,
+     "name": "Reply",
+     "enough": true,
+     "mult": 1.1
+    },
+    {
+     "n": 7,
+     "views": 102,
+     "median": 11,
+     "eng": 4,
+     "eng_rate": 3.9,
+     "likes": 2,
+     "name": "Quote",
+     "enough": true,
+     "mult": 1.0
+    }
+   ],
+   "formats": [
+    {
+     "n": 4,
+     "views": 65,
+     "median": 13.5,
+     "eng": 0,
+     "eng_rate": 0.0,
+     "likes": 0,
+     "name": "Image",
+     "enough": false,
+     "mult": 1.2
+    },
+    {
+     "n": 7,
+     "views": 1013,
+     "median": 12,
+     "eng": 9,
+     "eng_rate": 0.9,
+     "likes": 5,
+     "name": "Reply",
+     "enough": true,
+     "mult": 1.1
+    },
+    {
+     "n": 7,
+     "views": 102,
+     "median": 11,
+     "eng": 4,
+     "eng_rate": 3.9,
+     "likes": 2,
+     "name": "Quote",
+     "enough": true,
+     "mult": 1.0
+    },
+    {
+     "n": 10,
+     "views": 132,
+     "median": 9.5,
+     "eng": 7,
+     "eng_rate": 5.3,
+     "likes": 4,
+     "name": "Plain text",
+     "enough": true,
+     "mult": 0.9
+    },
+    {
+     "n": 1,
+     "views": 7,
+     "median": 7,
+     "eng": 0,
+     "eng_rate": 0.0,
+     "likes": 0,
+     "name": "Video",
+     "enough": false,
+     "mult": 0.6
+    }
+   ],
+   "best_format": {
+    "n": 7,
+    "views": 1013,
+    "median": 12,
+    "eng": 9,
+    "eng_rate": 0.9,
+    "likes": 5,
+    "name": "Reply",
+    "enough": true,
+    "mult": 1.1
+   },
+   "best_hour": null,
+   "hour_most_posts": {
+    "n": 8,
+    "views": 890,
+    "median": 8.0,
+    "eng": 7,
+    "eng_rate": 0.8,
+    "likes": 4,
+    "name": "7 AM",
+    "enough": true,
+    "mult": 0.7
+   },
+   "pillars": [
+    {
+     "n": 12,
+     "views": 166,
+     "median": 12.0,
+     "eng": 8,
+     "eng_rate": 4.8,
+     "likes": 4,
+     "name": "AI building in practice",
+     "target": 40,
+     "share": 41
+    },
+    {
+     "n": 5,
+     "views": 880,
+     "median": 5,
+     "eng": 2,
+     "eng_rate": 0.2,
+     "likes": 1,
+     "name": "Data/systems lessons",
+     "target": 30,
+     "share": 17
+    },
+    {
+     "n": 5,
+     "views": 92,
+     "median": 18,
+     "eng": 4,
+     "eng_rate": 4.3,
+     "likes": 2,
+     "name": "Open source & tools",
+     "target": 20,
+     "share": 17
+    },
+    {
+     "n": 1,
+     "views": 3,
+     "median": 3,
+     "eng": 0,
+     "eng_rate": 0.0,
+     "likes": 0,
+     "name": "Expert know-how → agents (acumane)",
+     "target": 10,
+     "share": 3
+    }
+   ],
+   "hooks": [
+    {
+     "n": 3,
+     "views": 962,
+     "median": 130,
+     "eng": 5,
+     "eng_rate": 0.5,
+     "likes": 3,
+     "name": "One-line answer",
+     "enough": false,
+     "mult": 11.8
+    },
+    {
+     "n": 1,
+     "views": 36,
+     "median": 36,
+     "eng": 2,
+     "eng_rate": 5.6,
+     "likes": 1,
+     "name": "News + takeaway",
+     "enough": false,
+     "mult": 3.3
+    },
+    {
+     "n": 2,
+     "views": 51,
+     "median": 25.5,
+     "eng": 1,
+     "eng_rate": 2.0,
+     "likes": 0,
+     "name": "Proof / showcase",
+     "enough": false,
+     "mult": 2.3
+    },
+    {
+     "n": 2,
+     "views": 45,
+     "median": 22.5,
+     "eng": 3,
+     "eng_rate": 6.7,
+     "likes": 2,
+     "name": "Problem-first",
+     "enough": false,
+     "mult": 2.0
+    },
+    {
+     "n": 2,
+     "views": 24,
+     "median": 12.0,
+     "eng": 3,
+     "eng_rate": 12.5,
+     "likes": 2,
+     "name": "Question",
+     "enough": false,
+     "mult": 1.1
+    },
+    {
+     "n": 1,
+     "views": 12,
+     "median": 12,
+     "eng": 0,
+     "eng_rate": 0.0,
+     "likes": 0,
+     "name": "Data point",
+     "enough": false,
+     "mult": 1.1
+    },
+    {
+     "n": 1,
+     "views": 11,
+     "median": 11,
+     "eng": 0,
+     "eng_rate": 0.0,
+     "likes": 0,
+     "name": "Link drop",
+     "enough": false,
+     "mult": 1.0
+    },
+    {
+     "n": 1,
+     "views": 7,
+     "median": 7,
+     "eng": 0,
+     "eng_rate": 0.0,
+     "likes": 0,
+     "name": "Personal story / confession",
+     "enough": false,
+     "mult": 0.6
+    },
+    {
+     "n": 16,
+     "views": 171,
+     "median": 6.0,
+     "eng": 6,
+     "eng_rate": 3.5,
+     "likes": 3,
+     "name": "Hot take",
+     "enough": true,
+     "mult": 0.5
+    }
+   ],
+   "targets": [
+    {
+     "target": "@suraj_sharma14",
+     "replies": 1,
+     "views": 825,
+     "followers": 32164,
+     "parent_views": 213105,
+     "parent_replies": 44,
+     "capture": 0.39
+    },
+    {
+     "target": "@ChezluiCJar",
+     "replies": 1,
+     "views": 130,
+     "followers": 1997,
+     "parent_views": 506,
+     "parent_replies": 1,
+     "capture": 25.69
+    },
+    {
+     "target": "@brianmcgrath",
+     "replies": 1,
+     "views": 36,
+     "followers": 8856,
+     "parent_views": 195,
+     "parent_replies": 3,
+     "capture": 18.46
+    },
+    {
+     "target": "@Unnati_builds24",
+     "replies": 1,
+     "views": 12,
+     "followers": 8567,
+     "parent_views": 758,
+     "parent_replies": 8,
+     "capture": 1.58
+    },
+    {
+     "target": "@MicroLaunchHQ",
+     "replies": 1,
+     "views": 7,
+     "followers": 11199,
+     "parent_views": 1074,
+     "parent_replies": 19,
+     "capture": 0.65
+    },
+    {
+     "target": "@BoboLinNotes",
+     "replies": 1,
+     "views": 2,
+     "followers": 4872,
+     "parent_views": 203,
+     "parent_replies": 4,
+     "capture": 0.99
+    },
+    {
+     "target": "@finnbuilt",
+     "replies": 1,
+     "views": 1,
+     "followers": 2995,
+     "parent_views": 250,
+     "parent_replies": 5,
+     "capture": 0.4
+    }
+   ],
+   "by_day": [
+    {
+     "label": "Nov 21",
+     "views": 24,
+     "posts": 5
+    },
+    {
+     "label": "Nov 22",
+     "views": 0,
+     "posts": 0
+    },
+    {
+     "label": "Nov 23",
+     "views": 884,
+     "posts": 9
+    },
+    {
+     "label": "Nov 24",
+     "views": 245,
+     "posts": 6
+    },
+    {
+     "label": "Nov 25",
+     "views": 65,
+     "posts": 5
+    },
+    {
+     "label": "Nov 26",
+     "views": 44,
+     "posts": 1
+    },
+    {
+     "label": "Nov 27",
+     "views": 57,
+     "posts": 3
+    }
+   ],
+   "by_month": [
+    {
+     "label": "Nov 2026",
+     "views": 1319
+    }
+   ],
+   "heat": [
+    [
+     0,
+     8,
+     865,
+     11,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     212,
+     0,
+     33,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     24,
+     41,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     44
+    ],
+    [
+     0,
+     0,
+     57,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     16,
+     0,
+     4,
+     0,
+     4,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   ],
+   "top": [
+    {
+     "id": "2124847190812291350",
+     "label": "Reconciliation: two systems disagree → @suraj_sharma14",
+     "views": 825,
+     "type": "Reply",
+     "et": "Nov 23 7:47 AM",
+     "url": "https://x.com/RohnSpringfield/status/2124847190812291350"
+    },
+    {
+     "id": "2125214423010680966",
+     "label": "😂 love this → @ChezluiCJar",
+     "views": 130,
+     "type": "Reply",
+     "et": "Nov 24 8:06 AM",
+     "url": "https://x.com/RohnSpringfield/status/2125214423010680966"
+    },
+    {
+     "id": "2126143332359225579",
+     "label": "Today's innovation is tomorrow's legacy (SAP/IBM quote)",
+     "views": 44,
+     "type": "Quote",
+     "et": "Nov 26 9:37 PM",
+     "url": "https://x.com/RohnSpringfield/status/2126143332359225579"
+    },
+    {
+     "id": "2125214232639914398",
+     "label": "Harness matters (Artificial Analysis) → @brianmcgrath",
+     "views": 36,
+     "type": "Reply",
+     "et": "Nov 24 8:05 AM",
+     "url": "https://x.com/RohnSpringfield/status/2125214232639914398"
+    },
+    {
+     "id": "2126274493609889979",
+     "label": "gBench: evals on your own hardware",
+     "views": 36,
+     "type": "Original",
+     "et": "Nov 27 6:18 AM",
+     "url": "https://x.com/RohnSpringfield/status/2126274493609889979"
+    },
+    {
+     "id": "2125309027001540938",
+     "label": "Same model, 5.6M vs 27M tokens: harness (chart)",
+     "views": 33,
+     "type": "Original",
+     "et": "Nov 24 2:22 PM",
+     "url": "https://x.com/RohnSpringfield/status/2125309027001540938"
+    },
+    {
+     "id": "2125547626720342156",
+     "label": "Looking for AI builders to follow (ask)",
+     "views": 23,
+     "type": "Original",
+     "et": "Nov 25 6:10 AM",
+     "url": "https://x.com/RohnSpringfield/status/2125547626720342156"
+    },
+    {
+     "id": "2125210279835562370",
+     "label": "C'mon Tom (quote, @AnthropicAI jab)",
+     "views": 21,
+     "type": "Quote",
+     "et": "Nov 24 7:49 AM",
+     "url": "https://x.com/RohnSpringfield/status/2125210279835562370"
+    },
+    {
+     "id": "2125214893699678321",
+     "label": "MCP tool defs cost tokens every turn (Notion 17,161)",
+     "views": 18,
+     "type": "Original",
+     "et": "Nov 24 8:08 AM",
+     "url": "https://x.com/RohnSpringfield/status/2125214893699678321"
+    },
+    {
+     "id": "2125518113894515135",
+     "label": "Civilization is building neurons (quote)",
+     "views": 18,
+     "type": "Quote",
+     "et": "Nov 25 4:13 AM",
+     "url": "https://x.com/RohnSpringfield/status/2125518113894515135"
+    }
+   ],
+   "bottom": [
+    {
+     "id": "2125512220515676634",
+     "label": "Apps On Demand bingo card (quote)",
+     "views": 1,
+     "type": "Quote",
+     "et": "Nov 25 3:49 AM",
+     "url": "https://x.com/RohnSpringfield/status/2125512220515676634"
+    },
+    {
+     "id": "2124860285995622631",
+     "label": "Distribution as a feature → @finnbuilt",
+     "views": 1,
+     "type": "Reply",
+     "et": "Nov 23 8:39 AM",
+     "url": "https://x.com/RohnSpringfield/status/2124860285995622631"
+    },
+    {
+     "id": "2124133304378995148",
+     "label": "KPMG just ran 100+ AI agents on a real FTSE 250 audit.\n\nIn p",
+     "views": 2,
+     "type": "Original",
+     "et": "Nov 21 8:30 AM",
+     "url": "https://x.com/RohnSpringfield/status/2124133304378995148"
+    },
+    {
+     "id": "2124123863130820978",
+     "label": "@BoboLinNotes \"An agent that recovers from failure is infras",
+     "views": 2,
+     "type": "Reply",
+     "et": "Nov 21 7:52 AM",
+     "url": "https://x.com/RohnSpringfield/status/2124123863130820978"
+    },
+    {
+     "id": "2124817116176032166",
+     "label": "Alexandr Wang's read on the Riemann proof: raw intelligence ",
+     "views": 3,
+     "type": "Quote",
+     "et": "Nov 23 5:47 AM",
+     "url": "https://x.com/RohnSpringfield/status/2124817116176032166"
+    }
+   ]
+  },
   "30d": "all"
  },
  "followers_series": [
@@ -684,6 +1298,10 @@
   {
    "label": "Nov 26 9:33 PM",
    "followers": 9
+  },
+  {
+   "label": "Nov 27 9:36 PM",
+   "followers": 9
   }
  ],
  "heat_cols": [
@@ -697,14 +1315,14 @@
   "9p–12a"
  ],
  "funnel": {
-  "drafted": 60,
-  "approved": 14,
-  "posted": 14
+  "drafted": 68,
+  "approved": 17,
+  "posted": 17
  },
  "moves": [
-  "Reply where attention already is: replies on 100K+-view parents got a median 822 views vs 10 on <2K parents. Scout with reply_targets.py.",
-  "Ride the winner: 'Same model, 5.6M vs 27M tokens: harness (chart)' did 33 views (4.7x its type median). Next package: standalone original: same insight, plain problem-first hook.",
-  "Lean on replies: median 10 views vs 7 for originals (13 vs 18 posts)."
+  "Reply where attention already is: replies on 100K+-view parents got a median 825 views vs 10 on <2K parents. Scout with reply_targets.py.",
+  "Ride the winner: 'Reconciliation: two systems disagree → @suraj_sharma14' did 825 views (82.5x its type median). Next package: standalone original: same insight, plain problem-first hook.",
+  "Lean on replies: median 10 views vs 8 for originals (13 vs 21 posts)."
  ],
  "limits": [
   {
@@ -717,7 +1335,7 @@
   },
   {
    "label": "Follower history",
-   "value": "built from refreshes; 8 snapshot(s) so far, X has no history endpoint"
+   "value": "built from refreshes; 9 snapshot(s) so far, X has no history endpoint"
   },
   {
    "label": "Engagement rate",
@@ -729,7 +1347,7 @@
   },
   {
    "label": "Classification",
-   "value": "28 of 37 posts hand-classified in classify.json; the rest are keyword guesses"
+   "value": "32 of 41 posts hand-classified in classify.json; the rest are keyword guesses"
   }
  ]
 }
